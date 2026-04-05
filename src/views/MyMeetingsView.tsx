@@ -132,7 +132,7 @@ export default function MyMeetingsView({ bookings = [], onRemove, onEdit }: { bo
 
         {/* Future section */}
         <div className="w-full">
-           <div className="flex items-center gap-4 mb-6 sticky top-0 bg-surface/90 backdrop-blur-md z-20 py-3 rounded-b-xl border-t border-b border-primary/10">
+           <div className="flex items-center gap-4 mb-6">
              <h3 className="text-xs font-bold uppercase tracking-widest text-primary">Upcoming Meetings</h3>
              <div className="flex-1 h-px bg-primary/20"></div>
            </div>
