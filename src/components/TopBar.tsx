@@ -1,4 +1,4 @@
-import { Moon, Sun, User, Github } from 'lucide-react';
+import { Moon, Sun, Settings, Github } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { AvatarIcon } from './Avatars';
@@ -46,34 +46,12 @@ export default function TopBar({ isDark, toggleDark, setCurrentView, userProfile
           <button onClick={toggleDark} className="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors">
             {isDark ? <Sun size={20} /> : <Moon size={20} />}
           </button>
-          <div className="relative" ref={menuRef}>
-            <button 
-              onClick={() => setMenuOpen(!menuOpen)} 
-              className="w-10 h-10 rounded-full bg-surface-container-highest overflow-hidden ml-2 border-2 border-primary-container hover:opacity-80 transition-opacity flex items-center justify-center p-0.5 relative z-[60]"
-            >
-              <AvatarIcon type={userProfile?.avatar || 'dog'} />
-            </button>
-            <AnimatePresence>
-              {menuOpen && (
-                <motion.div 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  className="absolute top-12 right-0 min-w-[200px] bg-surface-container-lowest border border-outline-variant/20 shadow-2xl rounded-xl overflow-hidden py-2"
-                >
-                  <button 
-                    onClick={() => {
-                      if (setCurrentView) setCurrentView('profile');
-                      setMenuOpen(false);
-                    }}
-                    className="w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-surface-container-low font-bold text-sm text-on-surface transition-colors"
-                  >
-                    <User size={18} className="text-on-surface-variant" /> My Meetings
-                  </button>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+          <button 
+            onClick={() => setCurrentView?.('profile')}
+            className="w-10 h-10 rounded-full bg-surface-container-highest overflow-hidden ml-2 border-2 border-primary-container hover:opacity-80 transition-transform active:scale-95 hover:scale-105 flex items-center justify-center p-0.5 relative z-[60]"
+          >
+            <AvatarIcon type={userProfile?.avatar || 'dog'} />
+          </button>
         </div>
       </div>
     </header>

@@ -1,4 +1,4 @@
-import { LayoutGrid, Calendar, Map, BarChart2, Archive, HelpCircle, Bot } from 'lucide-react';
+import { LayoutGrid, Calendar, Map, List, Bot } from 'lucide-react';
 
 interface SidebarProps {
   currentView: string;
@@ -12,6 +12,7 @@ export default function Sidebar({ currentView, setCurrentView, onNewBooking, onO
     { id: 'lounges', icon: LayoutGrid, label: 'Lounges' },
     { id: 'timeline', icon: Calendar, label: 'Timeline' },
     { id: 'locator', icon: Map, label: 'Locator' },
+    { id: 'mymeetings', icon: List, label: 'My Meetings' },
   ];
 
   return (

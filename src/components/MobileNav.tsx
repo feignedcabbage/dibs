@@ -1,4 +1,4 @@
-import { LayoutGrid, User } from 'lucide-react';
+import { LayoutGrid, List } from 'lucide-react';
 
 interface MobileNavProps {
   currentView: string;
@@ -8,7 +8,7 @@ interface MobileNavProps {
 export default function MobileNav({ currentView, setCurrentView }: MobileNavProps) {
   const navItems = [
     { id: 'home', icon: LayoutGrid, label: 'Home' },
-    { id: 'profile', icon: User, label: 'My Meetings' },
+    { id: 'mymeetings', icon: List, label: 'My Meetings' },
   ];
 
   return (

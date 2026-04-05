@@ -104,9 +104,15 @@ export default function LoungesView({ onBook, bookings = [] }: LoungesViewProps)
          progress: Math.min(Math.max(progressRaw, 5), 100) 
        }
     } else {
+       let availableTill = 'Available till EOD';
+       if (currentMins >= 19 * 60 || currentMins < 10 * 60) {
+          availableTill = 'Available from 10:00 AM';
+       } else if (nextBooking) {
+          availableTill = `Available till ${nextBooking.startTime}`;
+       }
        return {
          status: 'Available',
-         availableTill: nextBooking ? `Available till ${nextBooking.startTime}` : 'Available till EOD'
+         availableTill
        }
     }
   }

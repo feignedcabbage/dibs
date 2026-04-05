@@ -7,6 +7,7 @@ import LoungesView from './views/LoungesView';
 import TimelineView from './views/TimelineView';
 import LocatorView from './views/LocatorView';
 import ProfileView from './views/ProfileView';
+import MyMeetingsView from './views/MyMeetingsView';
 import MobileHomeView from './views/MobileHomeView';
 import ChatBotModal from './components/ChatBotModal';
 import LoginView from './views/LoginView';
@@ -140,8 +141,9 @@ export default function App() {
         
         {/* Mobile View Routing Node */}
         <div className="md:hidden flex-1 flex flex-col">
-           {(currentView === 'home' || currentView === 'lounges') && <MobileHomeView bookings={bookings} onBook={() => setBookingRoom({ id: 'new', name: 'Select a Lounge', capacity: 0 })} onViewAll={() => setCurrentView('profile')} />}
-           {currentView === 'profile' && <ProfileView bookings={bookings} onRemove={handleRemoveBooking} onEdit={(b) => setBookingRoom({ isEditing: true, bookingData: b, id: b.roomId, name: b.location, capacity: 0 })} userProfile={userProfile} onUpdateProfile={handleUpdateProfile} onDeleteProfile={handleDeleteProfile} />}
+           {(currentView === 'home' || currentView === 'lounges') && <MobileHomeView bookings={bookings} onBook={() => setBookingRoom({ id: 'new', name: 'Select a Lounge', capacity: 0 })} onViewAll={() => setCurrentView('mymeetings')} />}
+           {currentView === 'profile' && <ProfileView userProfile={userProfile} onUpdateProfile={handleUpdateProfile} onDeleteProfile={handleDeleteProfile} />}
+           {currentView === 'mymeetings' && <MyMeetingsView bookings={bookings} onRemove={handleRemoveBooking} onEdit={(b) => setBookingRoom({ isEditing: true, bookingData: b, id: b.roomId, name: b.location, capacity: 0 })} />}
         </div>
 
         {/* Desktop View Routing Node */}
@@ -150,7 +152,8 @@ export default function App() {
            {(currentView === 'home') && <LoungesView bookings={bookings} onBook={(room) => setBookingRoom(room)} />}
            {currentView === 'timeline' && <TimelineView bookings={bookings} selectedDate={globalTimelineDate} setSelectedDate={setGlobalTimelineDate} />}
            {currentView === 'locator' && <LocatorView onBook={(room) => setBookingRoom(room)} />}
-           {currentView === 'profile' && <ProfileView bookings={bookings} onRemove={handleRemoveBooking} onEdit={(b) => setBookingRoom({ isEditing: true, bookingData: b, id: b.roomId, name: b.location, capacity: 0 })} userProfile={userProfile} onUpdateProfile={handleUpdateProfile} onDeleteProfile={handleDeleteProfile} />}
+           {currentView === 'profile' && <ProfileView userProfile={userProfile} onUpdateProfile={handleUpdateProfile} onDeleteProfile={handleDeleteProfile} />}
+           {currentView === 'mymeetings' && <MyMeetingsView bookings={bookings} onRemove={handleRemoveBooking} onEdit={(b) => setBookingRoom({ isEditing: true, bookingData: b, id: b.roomId, name: b.location, capacity: 0 })} />}
         </div>
       </main>
       
