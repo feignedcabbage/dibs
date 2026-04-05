@@ -2,7 +2,7 @@ import { motion } from 'motion/react';
 import { useState, useEffect } from 'react';
 import { AvatarIcon } from '../components/Avatars';
 
-export default function ProfileView({ userProfile, onUpdateProfile, onDeleteProfile }: { userProfile?: any, onUpdateProfile?: (d: any) => void, onDeleteProfile?: () => void }) {
+export default function ProfileView({ userProfile, onUpdateProfile, onDeleteProfile, onLogout }: { userProfile?: any, onUpdateProfile?: (d: any) => void, onDeleteProfile?: () => void, onLogout?: () => void }) {
   const [confirmDeleteAccount, setConfirmDeleteAccount] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [editName, setEditName] = useState('');
@@ -71,6 +71,7 @@ export default function ProfileView({ userProfile, onUpdateProfile, onDeleteProf
                <h2 className="text-3xl md:text-4xl font-extrabold font-headline text-on-surface tracking-tighter mb-1 truncate">{userProfile?.name || 'Loading...'}</h2>
                <div className="mt-2 flex flex-wrap gap-3">
                  <button onClick={() => setIsEditingProfile(true)} className="text-xs font-bold text-on-surface-variant hover:text-primary transition-colors underline decoration-outline-variant hover:decoration-primary underline-offset-4">Edit Profile Options</button>
+                  <button onClick={onLogout} className="text-xs font-bold text-on-surface-variant hover:text-primary transition-colors underline decoration-outline-variant hover:decoration-primary underline-offset-4">Logout</button>
                  <button onClick={() => setConfirmDeleteAccount(true)} className="text-xs font-bold text-error/70 hover:text-error transition-colors underline decoration-error/30 hover:decoration-error underline-offset-4">Delete Account</button>
                </div>
              </>

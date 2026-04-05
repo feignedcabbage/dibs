@@ -1,4 +1,4 @@
-import { X, Info } from 'lucide-react';
+import { X, Info, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useState, useEffect } from 'react';
 import CustomDatePicker from './CustomDatePicker';
@@ -45,6 +45,7 @@ export default function BookingSidebar({ room, onClose, bookings = [], addBookin
   const [duration, setDuration] = useState('1 Hour');
   const [error, setError] = useState('');
   const [autoUpdatedNote, setAutoUpdatedNote] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   useEffect(() => {
     if (room?.isEditing && room.bookingData) {
@@ -60,6 +61,7 @@ export default function BookingSidebar({ room, onClose, bookings = [], addBookin
       setDuration('1 Hour');
       setError('');
       setAutoUpdatedNote(false);
+      setIsSuccess(false);
       
       let initialLounge = loungeOptions[0];
       if (room && room.id !== 'new') {
@@ -122,7 +124,7 @@ export default function BookingSidebar({ room, onClose, bookings = [], addBookin
         setAutoUpdatedNote(true);
       }
     }
-  }, [room, bookings]);
+  }, [room]);
 
   const handleConfirm = () => {
     setError('');
@@ -188,7 +190,7 @@ export default function BookingSidebar({ room, onClose, bookings = [], addBookin
       });
     }
 
-    onClose();
+    setIsSuccess(true);
   };
 
   const getDisabledTimes = () => {
@@ -257,54 +259,79 @@ export default function BookingSidebar({ room, onClose, bookings = [], addBookin
             </div>
             
             <div className="p-6 flex-1 overflow-y-auto space-y-6">
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">Meeting Title</label>
-                <input 
-                  type="text" 
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g. Q3 Roadmap Review" 
-                  className="w-full bg-surface-container-low p-4 rounded-xl border border-outline-variant/15 text-sm font-medium text-on-surface outline-none placeholder:text-on-surface-variant/50 focus:border-primary focus:ring-1 focus:ring-primary transition-all" 
-                />
-              </div>
-
-              {autoUpdatedNote && (room?.id === 'new' || (room && !room.isEditing)) && (
-                <div className="bg-primary-container text-on-primary-container p-3 rounded-xl border border-primary/20 text-xs font-bold flex items-start gap-3 shadow-sm mb-4">
-                  <Info size={16} className="mt-0.5 flex-shrink-0" />
-                  <p>We've automatically skipped ahead to the next available date because all earlier slots are totally booked up or past.</p>
+              {isSuccess ? (
+                <div className="flex flex-col items-center justify-center h-full text-center px-4">
+                  <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-6">
+                    <Check size={40} className="text-primary" />
+                  </div>
+                  <h3 className="text-2xl font-bold font-headline text-on-surface mb-3">Booking Confirmed!</h3>
+                  <p className="text-on-surface-variant font-medium leading-relaxed">
+                    Your meeting <span className="text-primary font-bold">"{title}"</span> has been successfully scheduled on <span className="font-bold">{date}</span> at <span className="font-bold">{startTime}</span>.
+                  </p>
+                  <p className="text-on-surface-variant/70 text-xs mt-6">
+                    You can see or modify your appointments anytime in the <span className="font-bold underline">My Meetings</span> section.
+                  </p>
+                  <button 
+                    onClick={onClose}
+                    className="mt-10 w-full bg-surface-container-highest text-on-surface py-4 rounded-xl font-bold text-sm hover:bg-surface-container-high transition-colors"
+                  >
+                    Close
+                  </button>
                 </div>
+              ) : (
+                <>
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">Meeting Title</label>
+                    <input 
+                      type="text" 
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      placeholder="e.g. Q3 Roadmap Review" 
+                      className="w-full bg-surface-container-low p-4 rounded-xl border border-outline-variant/15 text-sm font-medium text-on-surface outline-none placeholder:text-on-surface-variant/50 focus:border-primary focus:ring-1 focus:ring-primary transition-all" 
+                    />
+                  </div>
+
+                  {autoUpdatedNote && (room?.id === 'new' || (room && !room.isEditing)) && (
+                    <div className="bg-primary-container text-on-primary-container p-3 rounded-xl border border-primary/20 text-xs font-bold flex items-start gap-3 shadow-sm mb-4">
+                      <Info size={16} className="mt-0.5 flex-shrink-0" />
+                      <p>We've automatically skipped ahead to the next available date because all earlier slots are totally booked up or past.</p>
+                    </div>
+                  )}
+
+                  {(room?.id === 'new' || room?.isEditing) && (
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">Select Lounge</label>
+                      <CustomDropdown options={loungeOptions} onChange={setSelectedLounge} defaultValue={selectedLounge} />
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">Date</label>
+                    <CustomDatePicker defaultValue={date} onChange={setDate} />
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">Start Time</label>
+                      <CustomTimePicker date={date} defaultValue={startTime} onChange={setStartTime} disabledTimes={getDisabledTimes()} />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">Duration</label>
+                      <CustomDropdown options={durationOptions} defaultValue={duration} onChange={setDuration} />
+                    </div>
+                  </div>
+                </>
               )}
-
-              {(room?.id === 'new' || room?.isEditing) && (
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">Select Lounge</label>
-                  <CustomDropdown options={loungeOptions} onChange={setSelectedLounge} defaultValue={selectedLounge} />
-                </div>
-              )}
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">Date</label>
-                <CustomDatePicker defaultValue={date} onChange={setDate} />
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">Start Time</label>
-                  <CustomTimePicker date={date} defaultValue={startTime} onChange={setStartTime} disabledTimes={getDisabledTimes()} />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">Duration</label>
-                  <CustomDropdown options={durationOptions} defaultValue={duration} onChange={setDuration} />
-                </div>
-              </div>
             </div>
             
-            <div className="p-6 border-t border-outline-variant/15 bg-surface-container-low/50">
-              {error && <div className="mb-4 text-xs font-bold text-error bg-error/10 p-3 rounded-xl border border-error/20">{error}</div>}
-              <button onClick={handleConfirm} className="w-full primary-gradient text-on-primary py-4 rounded-xl font-bold text-sm shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity">
-                {room.isEditing ? 'Save Changes' : 'Confirm Booking'}
-              </button>
-            </div>
+            {!isSuccess && (
+              <div className="p-6 border-t border-outline-variant/15 bg-surface-container-low/50">
+                {error && <div className="mb-4 text-xs font-bold text-error bg-error/10 p-3 rounded-xl border border-error/20">{error}</div>}
+                <button onClick={handleConfirm} className="w-full primary-gradient text-on-primary py-4 rounded-xl font-bold text-sm shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity">
+                  {room.isEditing ? 'Save Changes' : 'Confirm Booking'}
+                </button>
+              </div>
+            )}
           </motion.div>
         </>
       )}
