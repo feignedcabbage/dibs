@@ -1,4 +1,3 @@
-import { Building2, Video } from 'lucide-react';
 import { motion } from 'motion/react';
 
 interface Room {
@@ -7,20 +6,107 @@ interface Room {
   capacity: number;
 }
 
-interface LoungesViewProps {
-  onBook: (room: Room) => void;
+interface Booking {
+  id: string;
+  userEmail: string;
+  title: string;
+  roomId: string;
+  location: string;
+  date: string;
+  startTime: string;
+  duration: string;
 }
 
-export default function LoungesView({ onBook }: LoungesViewProps) {
-  const rooms = [
-    { id: 'blr', name: 'Blr lounge', location: 'Bengaluru Hub', capacity: 20, status: 'In Use', type: 'Conference Room', colSpan: 2 },
-    { id: 'delhi', name: 'Delhi lounge', location: 'New Delhi', capacity: 3, status: 'Available', type: 'Level 2' },
-    { id: 'mumbai', name: 'Mumbai lounge', location: 'Mumbai West', capacity: 3, status: 'Next Up', type: 'Level 1' },
-    { id: 'hyd', name: 'Hyd lounge', location: 'Hyderabad', capacity: 3, status: 'Available', type: 'Level 3' },
-    { id: 'dubai', name: 'Dubai lounge', location: 'Dubai DIFC', capacity: 3, status: 'In Use', type: 'DIFC' },
-    { id: 'london', name: 'LONDON', location: 'London City', capacity: 3, status: 'Available', type: 'City' },
-    { id: 'sfo', name: 'SFO', location: 'San Francisco', capacity: 3, status: 'In Use', type: 'Mission' },
+interface LoungesViewProps {
+  onBook: (room: Room) => void;
+  bookings?: Booking[];
+}
+
+const parseTimeToMins = (t: string) => {
+  if (!t) return 0;
+  const match = t.match(/(\d+):(\d+)\s+(AM|PM)/i);
+  if (!match) return 0;
+  let [, hStr, mStr, period] = match;
+  let h = parseInt(hStr, 10);
+  const m = parseInt(mStr, 10);
+  if (period.toUpperCase() === 'PM' && h !== 12) h += 12;
+  if (period.toUpperCase() === 'AM' && h === 12) h = 0;
+  return h * 60 + m;
+};
+
+const getDurMins = (d: string) => {
+  if (d === '30 Mins') return 30;
+  if (d.includes('1.5')) return 90;
+  if (d === '1 Hour') return 60;
+  if (d === '2 Hours') return 120;
+  if (d === '3 Hours') return 180;
+  if (d === '4 Hours') return 240;
+  return 480;
+};
+
+const formatMinsToTime = (mins: number) => {
+  let h = Math.floor(mins / 60);
+  const m = mins % 60;
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12;
+  h = h ? h : 12; 
+  return `${h}:${m.toString().padStart(2, '0')} ${ampm}`;
+};
+
+export default function LoungesView({ onBook, bookings = [] }: LoungesViewProps) {
+  const baseRooms = [
+    { id: 'blr', name: 'Blr lounge', location: 'Bengaluru Hub', capacity: 20, type: 'Conference Room', colSpan: 2 },
+    { id: 'delhi', name: 'Delhi lounge', location: 'New Delhi', capacity: 3, type: 'Level 2', colSpan: 1 },
+    { id: 'mumbai', name: 'Mumbai lounge', location: 'Mumbai West', capacity: 3, type: 'Level 1', colSpan: 1 },
+    { id: 'hyd', name: 'Hyd lounge', location: 'Hyderabad', capacity: 3, type: 'Level 3', colSpan: 1 },
+    { id: 'dubai', name: 'Dubai lounge', location: 'Dubai DIFC', capacity: 3, type: 'DIFC', colSpan: 1 },
+    { id: 'london', name: 'London lounge', location: 'London City', capacity: 3, type: 'City', colSpan: 1 },
+    { id: 'sfo', name: 'SFO lounge', location: 'San Francisco', capacity: 3, type: 'Mission', colSpan: 1 },
   ];
+
+  const today = new Date();
+  const formatAsDateStr = (d: Date) => {
+     const mm = (d.getMonth() + 1).toString().padStart(2, '0');
+     const dd = d.getDate().toString().padStart(2, '0');
+     const yyyy = d.getFullYear();
+     return `${mm} / ${dd} / ${yyyy}`;
+  };
+  const todayStr = formatAsDateStr(today);
+  const currentMins = today.getHours() * 60 + today.getMinutes();
+
+  const getRoomState = (roomId: string) => {
+    const todayBookings = bookings.filter(b => b.date === todayStr && b.roomId.toLowerCase() === roomId.toLowerCase());
+    
+    let ongoingBooking = null;
+    let nextBooking = null;
+
+    todayBookings.forEach(b => {
+      const start = parseTimeToMins(b.startTime);
+      const end = start + getDurMins(b.duration);
+      if (currentMins >= start && currentMins < end) {
+        ongoingBooking = { ...b, start, end };
+      } else if (start > currentMins) {
+        if (!nextBooking || start < nextBooking.start) {
+          nextBooking = { ...b, start, end };
+        }
+      }
+    });
+
+    if (ongoingBooking) {
+       const progressRaw = ((currentMins - ongoingBooking.start) / (ongoingBooking.end - ongoingBooking.start)) * 100;
+       return {
+         status: 'In Use',
+         title: ongoingBooking.title,
+         freeAt: formatMinsToTime(ongoingBooking.end),
+         progress: Math.min(Math.max(progressRaw, 5), 100) 
+       }
+    } else {
+       return {
+         status: 'Available',
+         availableTill: nextBooking ? `Available till ${nextBooking.startTime}` : 'Available till EOD'
+       }
+    }
+  }
 
   return (
     <motion.section 
@@ -34,168 +120,50 @@ export default function LoungesView({ onBook }: LoungesViewProps) {
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 flex-1">
-        {/* Card 1: Blr lounge */}
-        <div 
-          onClick={() => onBook(rooms[0])}
-          className="group bg-surface-container-lowest rounded-[2rem] p-5 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col border border-outline-variant/15 lg:col-span-2 relative overflow-hidden cursor-pointer"
-        >
-          <div className="flex justify-between items-start mb-4 relative z-10">
-            <div>
-              <span className="text-[0.65rem] uppercase tracking-widest text-primary font-bold mb-1 block">Bengaluru Hub</span>
-              <h3 className="text-2xl font-bold font-headline text-on-surface">Blr lounge</h3>
-              <p className="text-sm text-on-surface-variant font-medium">Conference Room • Cap 20</p>
-            </div>
-            <span className="px-3 py-1 rounded-full bg-secondary text-on-secondary text-[0.7rem] font-bold">In Use</span>
-          </div>
-          <div className="mt-auto relative z-10">
-            <div className="flex justify-between items-center text-xs font-bold text-on-surface-variant mb-2">
-              <span>Strategy Sync</span>
-              <span className="bg-secondary/15 text-secondary px-2 py-0.5 rounded-md">Free at 11:00 AM</span>
-            </div>
-            <div className="w-full h-1.5 bg-surface-container-high rounded-full overflow-hidden">
-              <div className="h-full primary-gradient rounded-full" style={{ width: '75%' }}></div>
-            </div>
-          </div>
-        </div>
-
-        {/* Card 2: Delhi lounge */}
-        <div 
-          onClick={() => onBook(rooms[1])}
-          className="bg-surface-container-lowest rounded-[2rem] p-5 shadow-sm hover:shadow-md transition-all border border-outline-variant/15 flex flex-col cursor-pointer"
-        >
-          <div className="flex justify-between items-start mb-4">
-            <div>
-              <span className="text-[0.65rem] uppercase tracking-widest text-primary font-bold mb-1 block">New Delhi</span>
-              <h3 className="text-xl font-bold font-headline text-on-surface">Delhi lounge</h3>
-              <p className="text-sm text-on-surface-variant font-medium">Cap 3</p>
-            </div>
-            <span className="px-3 py-1 rounded-full bg-primary-container text-on-primary-container text-[0.7rem] font-bold">Available</span>
-          </div>
-          <div className="mt-auto">
-            <div className="mb-2">
-              <span className="bg-primary/15 text-primary text-[0.65rem] font-bold uppercase tracking-tighter px-2 py-0.5 rounded-md inline-block">Available till 2:00 PM</span>
-            </div>
-            <button className="w-full py-2 bg-surface-container-low text-primary rounded-full text-xs font-bold hover:bg-primary hover:text-on-primary transition-colors">Quick Reserve</button>
-          </div>
-        </div>
-
-        {/* Card 3: Mumbai lounge */}
-        <div 
-          onClick={() => onBook(rooms[2])}
-          className="bg-surface-container-lowest rounded-[2rem] p-5 shadow-sm hover:shadow-md transition-all border border-outline-variant/15 flex flex-col cursor-pointer"
-        >
-          <div className="flex justify-between items-start mb-4">
-            <div>
-              <span className="text-[0.65rem] uppercase tracking-widest text-primary font-bold mb-1 block">Mumbai West</span>
-              <h3 className="text-xl font-bold font-headline text-on-surface">Mumbai lounge</h3>
-              <p className="text-sm text-on-surface-variant font-medium">Cap 3</p>
-            </div>
-            <span className="px-3 py-1 rounded-full bg-secondary text-on-secondary text-[0.7rem] font-bold">In Use</span>
-          </div>
-          <div className="mt-auto pt-4 border-t border-surface-container-high">
-            <div className="flex justify-between items-center text-[0.65rem] font-bold text-on-surface-variant mb-2">
-               <span className="italic">Product Design Review</span>
-               <span className="bg-secondary/15 text-secondary px-2 py-0.5 rounded-md">Free at 2:00 PM</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="flex -space-x-2">
-                <div className="w-6 h-6 rounded-full border-2 border-surface-container-lowest bg-surface-container-high overflow-hidden">
-                  <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuDpArjr5n4NJ9kC5i9JAgR934GA7m4XhxVenX93WgmRaBQ6Y8WPy7xyuXNVawTRv_w4ZFjX9N8RpOGkN6xtBZLP5wMAnaiEGVcbJqyUQUHg40lFNB9-_9WNU447a8HyZLbtsd83DkVF2CWCZzpMwmKBqpHwIBW8ZDdVVxuBL_-piSCWbAVUCJsU4yxR8M3PL-Wa1PFuVNLI9ImQ2wb5b6VcD7wsyY9yEhdp62Bnc-htvUKSKrSQ8w3JpcoPavkJmKHW_Xnt5dGtRFC1" alt="User" className="w-full h-full object-cover" />
+        {baseRooms.map(room => {
+          const state = getRoomState(room.id);
+          
+          return (
+            <div 
+              key={room.id}
+              onClick={() => onBook(room)}
+              className={`group bg-surface-container-lowest rounded-[2rem] p-5 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col border border-outline-variant/15 relative overflow-hidden cursor-pointer ${room.colSpan === 2 ? 'lg:col-span-2' : ''}`}
+            >
+              <div className="flex justify-between items-start mb-4 relative z-10 w-full">
+                <div className="min-w-0 pr-2">
+                  <span className="text-[0.65rem] uppercase tracking-widest text-primary font-bold mb-1 block truncate">{room.location}</span>
+                  <h3 className={`font-bold font-headline text-on-surface truncate ${room.colSpan === 2 ? 'text-2xl' : 'text-xl'}`}>{room.name}</h3>
+                  <p className="text-sm text-on-surface-variant font-medium truncate">{room.type === 'Conference Room' ? `${room.type} • Cap ${room.capacity}` : `Cap ${room.capacity}`}</p>
                 </div>
+                
+                <span className={`px-3 py-1 rounded-full text-[0.7rem] font-bold flex-shrink-0 ${state.status === 'In Use' ? 'bg-secondary text-on-secondary' : 'bg-primary-container text-on-primary-container'}`}>
+                  {state.status}
+                </span>
+              </div>
+
+              <div className="mt-auto relative z-10 pt-4 w-full">
+                {state.status === 'In Use' ? (
+                   <>
+                     <div className="flex justify-between items-center text-[0.65rem] sm:text-xs font-bold text-on-surface-variant mb-2">
+                       <span className="truncate pr-2 italic max-w-[65%]">{state.title}</span>
+                       <span className="bg-secondary/15 text-secondary px-2 py-0.5 rounded-md whitespace-nowrap">Free at {state.freeAt}</span>
+                     </div>
+                     <div className="w-full h-1.5 bg-surface-container-high rounded-full overflow-hidden">
+                       <div className="h-full primary-gradient rounded-full transition-all duration-1000 ease-in-out" style={{ width: `${state.progress}%` }}></div>
+                     </div>
+                   </>
+                ) : (
+                   <>
+                     <div className="mb-2">
+                       <span className="bg-primary/15 text-primary text-[0.65rem] font-bold uppercase tracking-tighter px-2 py-0.5 rounded-md inline-block">{state.availableTill}</span>
+                     </div>
+                     <button className="w-full py-2 bg-surface-container-low text-primary rounded-full text-xs font-bold hover:bg-primary hover:text-on-primary transition-colors">Quick Reserve</button>
+                   </>
+                )}
               </div>
             </div>
-          </div>
-        </div>
-
-        {/* Card 4: Hyd lounge */}
-        <div 
-          onClick={() => onBook(rooms[3])}
-          className="bg-surface-container-lowest rounded-[2rem] p-5 shadow-sm hover:shadow-md transition-all border border-outline-variant/15 flex flex-col cursor-pointer"
-        >
-          <div className="flex justify-between items-start mb-4">
-            <div>
-              <span className="text-[0.65rem] uppercase tracking-widest text-primary font-bold mb-1 block">Hyderabad</span>
-              <h3 className="text-xl font-bold font-headline text-on-surface">Hyd lounge</h3>
-              <p className="text-sm text-on-surface-variant font-medium">Cap 3</p>
-            </div>
-            <span className="px-3 py-1 rounded-full bg-primary-container text-on-primary-container text-[0.7rem] font-bold">Available</span>
-          </div>
-          <div className="mt-auto">
-            <div className="mb-2">
-              <span className="bg-primary/15 text-primary text-[0.65rem] font-bold uppercase tracking-tighter px-2 py-0.5 rounded-md inline-block">Available till EOD</span>
-            </div>
-            <button className="w-full py-2 bg-surface-container-low text-primary rounded-full text-xs font-bold hover:bg-primary hover:text-on-primary transition-colors">Quick Reserve</button>
-          </div>
-        </div>
-
-        {/* Card 5: Dubai lounge */}
-        <div 
-          onClick={() => onBook(rooms[4])}
-          className="bg-surface-container-lowest rounded-[2rem] p-5 shadow-sm hover:shadow-md transition-all border border-outline-variant/15 flex flex-col cursor-pointer"
-        >
-          <div className="flex justify-between items-start mb-4">
-            <div>
-              <span className="text-[0.65rem] uppercase tracking-widest text-primary font-bold mb-1 block">Dubai DIFC</span>
-              <h3 className="text-xl font-bold font-headline text-on-surface">Dubai lounge</h3>
-              <p className="text-sm text-on-surface-variant font-medium">Cap 3</p>
-            </div>
-            <span className="px-3 py-1 rounded-full bg-secondary text-on-secondary text-[0.7rem] font-bold">In Use</span>
-          </div>
-          <div className="mt-auto">
-            <div className="flex justify-between items-center text-xs font-bold text-on-surface-variant mb-2">
-              <span>Board Briefing</span>
-              <span className="bg-secondary/15 text-secondary px-2 py-0.5 rounded-md">Free at 4:30 PM</span>
-            </div>
-            <div className="w-full h-1.5 bg-surface-container-high rounded-full overflow-hidden">
-              <div className="h-full primary-gradient rounded-full" style={{ width: '33%' }}></div>
-            </div>
-          </div>
-        </div>
-
-        {/* Card 6: LONDON */}
-        <div 
-          onClick={() => onBook(rooms[5])}
-          className="bg-surface-container-lowest rounded-[2rem] p-5 shadow-sm hover:shadow-md transition-all border border-outline-variant/15 flex flex-col cursor-pointer"
-        >
-          <div className="flex justify-between items-start mb-4">
-            <div>
-              <span className="text-[0.65rem] uppercase tracking-widest text-primary font-bold mb-1 block">London City</span>
-              <h3 className="text-xl font-bold font-headline text-on-surface">London lounge</h3>
-              <p className="text-sm text-on-surface-variant font-medium">Cap 3</p>
-            </div>
-            <span className="px-3 py-1 rounded-full bg-primary-container text-on-primary-container text-[0.7rem] font-bold">Available</span>
-          </div>
-          <div className="mt-auto">
-            <div className="mb-2">
-              <span className="bg-primary/15 text-primary text-[0.65rem] font-bold uppercase tracking-tighter px-2 py-0.5 rounded-md inline-block">Available till 3:00 PM</span>
-            </div>
-            <button className="w-full py-2 bg-surface-container-low text-primary rounded-full text-xs font-bold hover:bg-primary hover:text-on-primary transition-colors">Quick Reserve</button>
-          </div>
-        </div>
-
-        {/* Card 7: SFO */}
-        <div 
-          onClick={() => onBook(rooms[6])}
-          className="bg-surface-container-lowest rounded-[2rem] p-5 shadow-sm hover:shadow-md transition-all border border-outline-variant/15 flex flex-col cursor-pointer"
-        >
-          <div className="flex justify-between items-start mb-4">
-            <div>
-              <span className="text-[0.65rem] uppercase tracking-widest text-primary font-bold mb-1 block">San Francisco</span>
-              <h3 className="text-xl font-bold font-headline text-on-surface">SFO lounge</h3>
-              <p className="text-sm text-on-surface-variant font-medium">Cap 3</p>
-            </div>
-            <span className="px-3 py-1 rounded-full bg-secondary text-on-secondary text-[0.7rem] font-bold">In Use</span>
-          </div>
-          <div className="mt-auto">
-            <div className="flex justify-between items-center text-xs font-bold text-on-surface-variant mb-2">
-              <span>Dev Sync</span>
-              <span className="bg-secondary/15 text-secondary px-2 py-0.5 rounded-md">Free at 5:00 PM</span>
-            </div>
-            <div className="w-full h-1.5 bg-surface-container-high rounded-full overflow-hidden">
-              <div className="h-full primary-gradient rounded-full" style={{ width: '92%' }}></div>
-            </div>
-          </div>
-        </div>
+          )
+        })}
       </div>
     </motion.section>
   );

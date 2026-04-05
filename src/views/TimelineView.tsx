@@ -75,7 +75,7 @@ export default function TimelineView({ bookings = [], selectedDate, setSelectedD
                 <span className="text-[10px] uppercase tracking-widest font-black text-on-surface-variant">Lounge Hubs</span>
               </div>
               <div className="flex-1 flex w-[900px]">
-                  {['9 AM', '10 AM', '11 AM', '12 PM', '1 PM', '2 PM', '3 PM', '4 PM', '5 PM', '6 PM'].map(time => (
+                  {['10 AM', '11 AM', '12 PM', '1 PM', '2 PM', '3 PM', '4 PM', '5 PM', '6 PM', '7 PM'].map(time => (
                     <div key={time} className="flex-1 text-center py-5 text-[10px] font-black text-on-surface-variant uppercase tracking-wider">{time}</div>
                   ))}
               </div>
@@ -96,8 +96,8 @@ export default function TimelineView({ bookings = [], selectedDate, setSelectedD
                        {roomBookings.map(b => {
                           const startMins = parseTimeToMinutes(b.startTime);
                           const durMins = getDurationMinutes(b.duration);
-                          // 9 AM = 540 mins. 10 hours = 600 mins total window (9AM to 7PM -> End bounding)
-                          let leftPercent = ((startMins - 540) / 600) * 100;
+                          // 10 AM = 600 mins. 10 hours = 600 mins total window (10AM to 8PM -> End bounding)
+                          let leftPercent = ((startMins - 600) / 600) * 100;
                           let widthPercent = (durMins / 600) * 100;
                           
                           if (leftPercent < 0) {

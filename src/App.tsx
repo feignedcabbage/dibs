@@ -23,9 +23,18 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState<string | null>(localStorage.getItem('dibs_user'));
   const [currentView, setCurrentView] = useState('home');
   const [bookingRoom, setBookingRoom] = useState<any>(null);
-  const [isDark, setIsDark] = useState(false);
+  const [isDark, setIsDark] = useState(() => {
+    const saved = localStorage.getItem('dibs_isDark');
+    return saved !== null ? saved === 'true' : true;
+  });
   const [isBotOpen, setIsBotOpen] = useState(false);
-  const [globalTimelineDate, setGlobalTimelineDate] = useState('04 / 05 / 2026');
+  const [globalTimelineDate, setGlobalTimelineDate] = useState(() => {
+     const today = new Date();
+     const mm = (today.getMonth() + 1).toString().padStart(2, '0');
+     const dd = today.getDate().toString().padStart(2, '0');
+     const yyyy = today.getFullYear();
+     return `${mm} / ${dd} / ${yyyy}`;
+  });
   
   const [bookings, setBookings] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -77,6 +86,7 @@ export default function App() {
   };
 
   useEffect(() => {
+    localStorage.setItem('dibs_isDark', isDark.toString());
     if (isDark) {
       document.documentElement.classList.add('dark');
     } else {
@@ -106,8 +116,8 @@ export default function App() {
 
         {/* Desktop View Routing Node */}
         <div className="hidden md:flex flex-1 flex-col">
-           {currentView === 'lounges' && <LoungesView onBook={(room) => setBookingRoom(room)} />}
-           {(currentView === 'home') && <LoungesView onBook={(room) => setBookingRoom(room)} />}
+           {currentView === 'lounges' && <LoungesView bookings={bookings} onBook={(room) => setBookingRoom(room)} />}
+           {(currentView === 'home') && <LoungesView bookings={bookings} onBook={(room) => setBookingRoom(room)} />}
            {currentView === 'timeline' && <TimelineView bookings={bookings} selectedDate={globalTimelineDate} setSelectedDate={setGlobalTimelineDate} />}
            {currentView === 'locator' && <LocatorView onBook={(room) => setBookingRoom(room)} />}
            {currentView === 'profile' && <ProfileView bookings={bookings} onRemove={handleRemoveBooking} onEdit={(b) => setBookingRoom({ isEditing: true, bookingData: b, id: b.roomId, name: b.location, capacity: 0 })} />}
