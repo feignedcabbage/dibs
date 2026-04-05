@@ -112,8 +112,16 @@ export default function TimelineView({ bookings = [], selectedDate, setSelectedD
 
                           return (
                             <div key={b.id} className="absolute top-2 bottom-2 bg-error/10 rounded-xl border-l-4 border-error p-3 flex flex-col justify-center overflow-hidden z-0 pointer-events-none" style={{ left: `${leftPercent}%`, width: `${widthPercent}%` }}>
-                              <span className="text-xs font-semibold text-on-surface truncate">{b.title}</span>
-                              {(b as any).userName && <span className="text-[8px] font-medium text-on-surface-variant truncate opacity-80 mt-0.5">by {(b as any).userName}</span>}
+                              {durMins <= 30 ? (
+                                <span className="text-[10px] font-bold text-on-surface leading-tight">
+                                  Booked by <span className="text-error">{(b as any).userName?.split(' ')[0] || 'User'}</span>
+                                </span>
+                              ) : (
+                                <>
+                                  <span className="text-xs font-semibold text-on-surface truncate">{b.title}</span>
+                                  {(b as any).userName && <span className="text-[8px] font-medium text-on-surface-variant truncate opacity-80 mt-0.5">by {(b as any).userName}</span>}
+                                </>
+                              )}
                             </div>
                           )
                        })}
