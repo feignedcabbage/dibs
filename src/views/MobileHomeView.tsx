@@ -24,7 +24,9 @@ export default function MobileHomeView({ userProfile, bookings = [], onBook, onV
       className="flex flex-col flex-1 pb-24 px-6 pt-10"
     >
       <div className="mb-10">
-        <h1 className="text-4xl font-extrabold font-headline tracking-tighter text-on-surface mb-2">Hello {userProfile?.name?.split(' ')[0] || ''}!</h1>
+        <h1 className="text-4xl font-extrabold font-headline tracking-tighter text-on-surface mb-2">
+          Hello {userProfile?.name ? (userProfile.name.split(' ')[0].charAt(0).toUpperCase() + userProfile.name.split(' ')[0].slice(1)) : ''}!
+        </h1>
         <p className="text-on-surface-variant font-medium text-sm">Welcome to DIBS meeting scheduling.</p>
       </div>
 

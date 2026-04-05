@@ -32,7 +32,10 @@ export default function TopBar({ isDark, toggleDark, setCurrentView, userProfile
   return (
     <header className="flex justify-between items-center w-full px-8 py-6 sticky top-0 z-40 bg-surface/80 backdrop-blur-md border-b border-surface-container-high transition-colors duration-300">
       <div className="flex items-center gap-6">
-        <span className="text-xl font-bold text-primary font-headline tracking-tight">Hello, {userProfile?.name?.split(' ')[0] || 'there'}</span>
+        <span className="text-xl font-bold text-primary font-headline tracking-tight md:hidden">DIBS</span>
+        <span className="text-xl font-bold text-primary font-headline tracking-tight hidden md:block">
+          Hello, {(userProfile?.name?.split(' ')[0] || 'there').charAt(0).toUpperCase() + (userProfile?.name?.split(' ')[0] || 'there').slice(1)}
+        </span>
       </div>
       
       <div className="flex items-center gap-4">
