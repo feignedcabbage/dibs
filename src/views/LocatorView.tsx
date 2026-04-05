@@ -1,6 +1,19 @@
 import { motion } from 'motion/react';
 
-export default function LocatorView() {
+interface LocatorViewProps {
+  onBook?: (room: any) => void;
+}
+
+export default function LocatorView({ onBook }: LocatorViewProps) {
+  const rooms = [
+    { id: 'delhi', name: 'Delhi lounge', cap: 3, top: '48%', left: '57.2%' },
+    { id: 'mumbai', name: 'Mumbai lounge', cap: 3, top: '48%', left: '63.4%' },
+    { id: 'hyd', name: 'Hyd lounge', cap: 3, top: '48%', left: '69.6%' },
+    { id: 'dubai', name: 'Dubai lounge', cap: 3, top: '48%', left: '75.8%' },
+    { id: 'london', name: 'London lounge', cap: 3, top: '72%', left: '51%' },
+    { id: 'sfo', name: 'SFO lounge', cap: 3, top: '78%', left: '51%' },
+  ];
+
   return (
     <motion.section 
       initial={{ opacity: 0, y: 10 }}
@@ -20,10 +33,10 @@ export default function LocatorView() {
           </svg>
 
           {/* Conference Room (Blr lounge) */}
-          <div className="absolute bg-secondary text-on-secondary shadow-sm hover:scale-[1.02] z-20 cursor-pointer flex flex-col items-center justify-center transition-transform border border-outline-variant/20" style={{ left: '0%', top: '0%', width: '14%', height: '24%' }}>
+          <button onClick={() => onBook?.({ id: 'blr', name: 'Blr lounge', capacity: 20 })} className="absolute bg-secondary text-on-secondary shadow-sm hover:scale-[1.02] z-20 cursor-pointer flex flex-col items-center justify-center transition-transform border border-outline-variant/20 focus:outline-none" style={{ left: '0%', top: '0%', width: '14%', height: '24%' }}>
             <span className="text-[10px] font-bold text-center leading-tight">Blr lounge</span>
             <span className="text-[8px] opacity-80">Cap 20</span>
-          </div>
+          </button>
 
           {/* Executive Cabins */}
           <div className="absolute bg-surface-container text-on-surface-variant z-10 flex items-center justify-center border border-outline-variant/20" style={{ left: '0%', top: '24%', width: '14%', height: '10%' }}>
@@ -72,36 +85,19 @@ export default function LocatorView() {
             <span className="text-[6px] font-medium">Storage</span>
           </div>
 
-          {/* M Rooms (Lounges) */}
-          <div className="absolute bg-primary text-on-primary shadow-sm hover:scale-110 z-30 cursor-pointer flex flex-col items-center justify-center transition-transform border border-outline-variant/20" style={{ left: '57.2%', top: '48%', width: '6.2%', height: '5%' }}>
-            <span className="text-[6px] font-bold">Delhi</span>
-            <span className="text-[5px] opacity-80">Cap 3</span>
-          </div>
-          
-          <div className="absolute bg-tertiary text-on-tertiary shadow-sm hover:scale-110 z-30 cursor-pointer flex flex-col items-center justify-center transition-transform border border-outline-variant/20" style={{ left: '63.4%', top: '48%', width: '6.2%', height: '5%' }}>
-            <span className="text-[6px] font-bold">Mumbai</span>
-            <span className="text-[5px] opacity-80">Cap 3</span>
-          </div>
-          
-          <div className="absolute bg-primary text-on-primary shadow-sm hover:scale-110 z-30 cursor-pointer flex flex-col items-center justify-center transition-transform border border-outline-variant/20" style={{ left: '69.6%', top: '48%', width: '6.2%', height: '5%' }}>
-            <span className="text-[6px] font-bold">Hyd</span>
-            <span className="text-[5px] opacity-80">Cap 3</span>
-          </div>
-          
-          <div className="absolute bg-secondary text-on-secondary shadow-sm hover:scale-110 z-30 cursor-pointer flex flex-col items-center justify-center transition-transform border border-outline-variant/20" style={{ left: '75.8%', top: '48%', width: '6.2%', height: '5%' }}>
-            <span className="text-[6px] font-bold">Dubai</span>
-            <span className="text-[5px] opacity-80">Cap 3</span>
-          </div>
+          {/* Small Interactive Lounges */}
+          {rooms.map(room => (
+             <button 
+               key={room.id}
+               onClick={() => onBook?.({ id: room.id, name: room.name, capacity: room.cap })}
+               className="absolute bg-primary text-on-primary shadow-sm hover:scale-110 z-30 flex flex-col items-center justify-center transition-transform border border-outline-variant/20 focus:outline-none"
+               style={{ left: room.left, top: room.top, width: '6.2%', height: room.id === 'london' || room.id === 'sfo' ? '6%' : '5%' }}
+             >
+                <span className="text-[6px] font-bold">{room.name.split(' ')[0]}</span>
+                <span className="text-[5px] opacity-80">Cap {room.cap}</span>
+             </button>
+          ))}
 
-          <div className="absolute bg-primary text-on-primary shadow-sm hover:scale-110 z-30 cursor-pointer flex flex-col items-center justify-center transition-transform border border-outline-variant/20" style={{ left: '51%', top: '72%', width: '6.2%', height: '6%' }}>
-            <span className="text-[6px] font-bold">London</span>
-            <span className="text-[5px] opacity-80">Cap 3</span>
-          </div>
-          
-          <div className="absolute bg-secondary text-on-secondary shadow-sm hover:scale-110 z-30 cursor-pointer flex flex-col items-center justify-center transition-transform border border-outline-variant/20" style={{ left: '51%', top: '78%', width: '6.2%', height: '6%' }}>
-            <span className="text-[6px] font-bold">SFO</span>
-            <span className="text-[5px] opacity-80">Cap 3</span>
-          </div>
 
           {/* E Room */}
           <div className="absolute bg-surface-container text-on-surface-variant z-10 flex items-center justify-center border border-outline-variant/20" style={{ left: '51%', top: '53%', width: '6.2%', height: '6%' }}>

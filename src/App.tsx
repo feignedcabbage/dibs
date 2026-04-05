@@ -9,6 +9,8 @@ import LocatorView from './views/LocatorView';
 import ProfileView from './views/ProfileView';
 import MobileHomeView from './views/MobileHomeView';
 import ChatBotModal from './components/ChatBotModal';
+import LoginView from './views/LoginView';
+import { fetchBookings, createBooking, deleteBooking, updateBooking } from './api';
 
 const initialBookings = [
   { id: 'mock1', title: 'Product Review', roomId: 'DELHI', location: 'Delhi lounge', date: '04 / 05 / 2026', startTime: '11:00 AM', duration: '1 Hour' },
@@ -18,32 +20,60 @@ const initialBookings = [
 ];
 
 export default function App() {
+  const [currentUser, setCurrentUser] = useState<string | null>(localStorage.getItem('dibs_user'));
   const [currentView, setCurrentView] = useState('home');
   const [bookingRoom, setBookingRoom] = useState<any>(null);
   const [isDark, setIsDark] = useState(false);
   const [isBotOpen, setIsBotOpen] = useState(false);
   const [globalTimelineDate, setGlobalTimelineDate] = useState('04 / 05 / 2026');
   
-  const [bookings, setBookings] = useState<any[]>(() => {
-    const saved = localStorage.getItem('dibs_bookings');
-    if (saved) return JSON.parse(saved);
-    return initialBookings;
-  });
+  const [bookings, setBookings] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
+  // Authenticated Bootstrap Logic
   useEffect(() => {
-    localStorage.setItem('dibs_bookings', JSON.stringify(bookings));
-  }, [bookings]);
+    if (!currentUser) return;
+    localStorage.setItem('dibs_user', currentUser);
+    
+    setIsLoading(true);
+    fetchBookings()
+      .then(data => setBookings(data))
+      .catch(err => {
+         console.warn("Failed connecting to dibstg.duckdns.org backend — Falling back to static cache.", err);
+         setBookings(initialBookings);
+      })
+      .finally(() => setIsLoading(false));
+  }, [currentUser]);
 
-  const handleAddBooking = (booking: any) => {
-    setBookings((prev) => [...prev, booking]);
+  const handleAddBooking = async (booking: any) => {
+    const enrichedBooking = { ...booking, userEmail: currentUser };
+    try {
+      await createBooking(enrichedBooking);
+      setBookings((prev) => [...prev, enrichedBooking]);
+    } catch(e) {
+      console.warn("Backend Write failed, optimistically adding locally.", e);
+      setBookings((prev) => [...prev, enrichedBooking]);
+    }
   };
 
-  const handleRemoveBooking = (id: string) => {
-    setBookings((prev) => prev.filter(b => b.id !== id));
+  const handleRemoveBooking = async (id: string) => {
+    try {
+      await deleteBooking(id);
+      setBookings((prev) => prev.filter(b => b.id !== id));
+    } catch(e) {
+      console.warn("Backend Delete failed, optimistically dropping locally.", e);
+      setBookings((prev) => prev.filter(b => b.id !== id));
+    }
   };
   
-  const handleUpdateBooking = (id: string, updated: any) => {
-    setBookings((prev) => prev.map(b => b.id === id ? updated : b));
+  const handleUpdateBooking = async (id: string, updated: any) => {
+    try {
+      await updateBooking(id, updated);
+      setBookings((prev) => prev.map(b => b.id === id ? updated : b));
+    } catch(e) {
+      console.warn("Backend Update failed, optimistically modifying locally.", e);
+      setBookings((prev) => prev.map(b => b.id === id ? updated : b));
+    }
   };
 
   useEffect(() => {
@@ -53,6 +83,8 @@ export default function App() {
       document.documentElement.classList.remove('dark');
     }
   }, [isDark]);
+
+  if (!currentUser) return <LoginView onLogin={setCurrentUser} />;
 
   return (
     <div className="bg-surface font-body text-on-surface flex min-h-screen transition-colors duration-300">
@@ -77,7 +109,7 @@ export default function App() {
            {currentView === 'lounges' && <LoungesView onBook={(room) => setBookingRoom(room)} />}
            {(currentView === 'home') && <LoungesView onBook={(room) => setBookingRoom(room)} />}
            {currentView === 'timeline' && <TimelineView bookings={bookings} selectedDate={globalTimelineDate} setSelectedDate={setGlobalTimelineDate} />}
-           {currentView === 'locator' && <LocatorView />}
+           {currentView === 'locator' && <LocatorView onBook={(room) => setBookingRoom(room)} />}
            {currentView === 'profile' && <ProfileView bookings={bookings} onRemove={handleRemoveBooking} onEdit={(b) => setBookingRoom({ isEditing: true, bookingData: b, id: b.roomId, name: b.location, capacity: 0 })} />}
         </div>
       </main>
