@@ -1,8 +1,8 @@
 import { Calendar, Plus, Clock, MapPin, ArrowRight } from 'lucide-react';
 import { motion } from 'motion/react';
-import { Booking } from './ProfileView';
+import { Booking } from './MyMeetingsView';
 
-export default function MobileHomeView({ bookings = [], onBook, onViewAll }: { bookings?: Booking[], onBook: () => void, onViewAll: () => void }) {
+export default function MobileHomeView({ userProfile, bookings = [], onBook, onViewAll }: { userProfile?: any, bookings?: Booking[], onBook: () => void, onViewAll: () => void }) {
   const now = new Date();
   
   const upcoming = [...bookings]
@@ -24,7 +24,7 @@ export default function MobileHomeView({ bookings = [], onBook, onViewAll }: { b
       className="flex flex-col flex-1 pb-24 px-6 pt-10"
     >
       <div className="mb-10">
-        <h1 className="text-4xl font-extrabold font-headline tracking-tighter text-on-surface mb-2">Hello!</h1>
+        <h1 className="text-4xl font-extrabold font-headline tracking-tighter text-on-surface mb-2">Hello {userProfile?.name?.split(' ')[0] || ''}!</h1>
         <p className="text-on-surface-variant font-medium text-sm">Welcome to DIBS meeting scheduling.</p>
       </div>
 

@@ -14,7 +14,7 @@ const morningTimes = allTimes.filter(t => t.endsWith('AM'));
 const afternoonTimes = allTimes.filter(t => t.endsWith('PM') && (t.startsWith('12') || parseInt(t.split(':')[0]) < 4));
 const eveningTimes = allTimes.filter(t => t.endsWith('PM') && (parseInt(t.split(':')[0]) >= 4 && parseInt(t.split(':')[0]) !== 12));
 
-export default function CustomTimePicker({ defaultValue, align = 'left', onChange, date = '04 / 05 / 2026' }: { defaultValue: string, align?: 'left' | 'right', onChange?: (val: string) => void, date?: string }) {
+export default function CustomTimePicker({ defaultValue, align = 'left', onChange, date = '04 / 05 / 2026', disabledTimes = [] }: { defaultValue: string, align?: 'left' | 'right', onChange?: (val: string) => void, date?: string, disabledTimes?: string[] }) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedTime, setSelectedTime] = useState(defaultValue);
   const popoverRef = useRef<HTMLDivElement>(null);
@@ -34,6 +34,8 @@ export default function CustomTimePicker({ defaultValue, align = 'left', onChang
     return timesToRender.map(time => {
       const match = time.match(/(\d+):(\d+)\s+(AM|PM)/i);
       let isPast = false;
+      const isOccupied = disabledTimes.some(dt => dt.toLowerCase().replace(/\s+/g, '') === time.toLowerCase().replace(/\s+/g, ''));
+
       if (match) {
         let [, h, m, period] = match;
         let hours = parseInt(h, 10);
@@ -42,10 +44,12 @@ export default function CustomTimePicker({ defaultValue, align = 'left', onChang
         const slotDate = new Date(yyyy, mm - 1, dd, hours, parseInt(m, 10));
         isPast = slotDate < now;
       }
+      
+      const isDisabled = isPast || isOccupied;
       return (
         <button
           key={time}
-          disabled={isPast}
+          disabled={isDisabled}
           onClick={(e) => { 
               e.preventDefault(); 
               setSelectedTime(time); 
@@ -53,7 +57,7 @@ export default function CustomTimePicker({ defaultValue, align = 'left', onChang
               setIsOpen(false); 
           }}
           className={`py-2 px-1 text-xs font-bold rounded-xl transition-all ${
-            isPast ? 'opacity-30 cursor-not-allowed text-on-surface-variant line-through decoration-error/50' :
+            isDisabled ? 'opacity-30 cursor-not-allowed text-on-surface-variant line-through decoration-error/50' :
             selectedTime === time
               ? 'bg-primary text-on-primary ring-2 ring-primary ring-offset-2 ring-offset-surface-container-lowest'
               : 'hover:bg-surface-container-high text-on-surface'

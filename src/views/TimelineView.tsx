@@ -112,7 +112,6 @@ export default function TimelineView({ bookings = [], selectedDate, setSelectedD
 
                           return (
                             <div key={b.id} className="absolute top-2 bottom-2 bg-error/10 rounded-xl border-l-4 border-error p-3 flex flex-col justify-center overflow-hidden z-0 pointer-events-none" style={{ left: `${leftPercent}%`, width: `${widthPercent}%` }}>
-                              <span className="text-[9px] font-bold text-error uppercase tracking-widest">Booked</span>
                               <span className="text-xs font-semibold text-on-surface truncate">{b.title}</span>
                               {(b as any).userName && <span className="text-[8px] font-medium text-on-surface-variant truncate opacity-80 mt-0.5">by {(b as any).userName}</span>}
                             </div>
@@ -130,7 +129,7 @@ export default function TimelineView({ bookings = [], selectedDate, setSelectedD
       <div className="mt-8 flex gap-6 items-center justify-end pb-32">
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full bg-error/20 border border-error/40"></div>
-          <span className="text-[11px] font-bold uppercase tracking-widest text-on-surface-variant">Booked</span>
+          <span className="text-[11px] font-bold uppercase tracking-widest text-on-surface-variant">Occupied</span>
         </div>
       </div>
     </motion.section>

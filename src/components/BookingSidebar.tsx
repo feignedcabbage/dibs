@@ -191,6 +191,35 @@ export default function BookingSidebar({ room, onClose, bookings = [], addBookin
     onClose();
   };
 
+  const getDisabledTimes = () => {
+    const currentRoomIdPrefix = room?.id === 'new' || room?.isEditing ? selectedLounge.split(' ')[0] : room.id;
+    const roomBookings = bookings.filter((b: any) => {
+      if (room?.isEditing && b.id === room.bookingData.id) return false;
+      return b.date === date && b.roomId.toLowerCase() === currentRoomIdPrefix.toLowerCase();
+    });
+
+    const occupiedSlots = new Set<string>();
+    const allTimes = [
+      '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM', '12:00 PM', '12:30 PM', '1:00 PM', '1:30 PM',
+      '2:00 PM', '2:30 PM', '3:00 PM', '3:30 PM', '4:00 PM', '4:30 PM', '5:00 PM', '5:30 PM', '6:00 PM', '6:30 PM', '7:00 PM'
+    ];
+
+    roomBookings.forEach((b: any) => {
+      const bStart = parseTimeToMinutes(b.startTime);
+      const bEnd = bStart + getDurationMinutes(b.duration);
+      
+      allTimes.forEach(time => {
+        const tMins = parseTimeToMinutes(time);
+        // If the slot start time falls within another booking's range, it's occupied.
+        if (tMins >= bStart && tMins < bEnd) {
+          occupiedSlots.add(time);
+        }
+      });
+    });
+
+    return Array.from(occupiedSlots);
+  };
+
   return (
     <AnimatePresence>
       {room && (
@@ -261,7 +290,7 @@ export default function BookingSidebar({ room, onClose, bookings = [], addBookin
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">Start Time</label>
-                  <CustomTimePicker date={date} defaultValue={startTime} onChange={setStartTime} />
+                  <CustomTimePicker date={date} defaultValue={startTime} onChange={setStartTime} disabledTimes={getDisabledTimes()} />
                 </div>
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">Duration</label>

@@ -1,10 +1,11 @@
 import { motion } from 'motion/react';
 
 interface LocatorViewProps {
+  bookings?: any[];
   onBook?: (room: any) => void;
 }
 
-export default function LocatorView({ onBook }: LocatorViewProps) {
+export default function LocatorView({ bookings = [], onBook }: LocatorViewProps) {
   const rooms = [
     { id: 'delhi', name: 'Delhi lounge', cap: 3, top: '48%', left: '57.2%' },
     { id: 'mumbai', name: 'Mumbai lounge', cap: 3, top: '48%', left: '63.4%' },
@@ -13,6 +14,49 @@ export default function LocatorView({ onBook }: LocatorViewProps) {
     { id: 'london', name: 'London lounge', cap: 3, top: '72%', left: '51%' },
     { id: 'sfo', name: 'SFO lounge', cap: 3, top: '78%', left: '51%' },
   ];
+
+  const getRoomClass = (roomId: string) => {
+    const now = new Date();
+    const currentMins = now.getHours() * 60 + now.getMinutes();
+    const mm = (now.getMonth() + 1).toString().padStart(2, '0');
+    const dd = now.getDate().toString().padStart(2, '0');
+    const yyyy = now.getFullYear();
+    const todayStr = `${mm}/${dd}/${yyyy}`;
+
+    const todaysBookings = bookings.filter(b => b.date.replace(/\s+/g, '') === todayStr && b.roomId.toLowerCase() === roomId.toLowerCase());
+    
+    let ongoing = false;
+    let nextUp = false;
+    
+    for (const b of todaysBookings) {
+      if(!b.startTime || !b.duration) continue;
+      const match = b.startTime.match(/(\d+):(\d+)\s+(AM|PM)/i);
+      if(!match) continue;
+      let [, h, m, p] = match;
+      let hrs = parseInt(h, 10);
+      if(p.toUpperCase() === 'PM' && hrs !== 12) hrs += 12;
+      if(p.toUpperCase() === 'AM' && hrs === 12) hrs = 0;
+      const startMins = hrs * 60 + parseInt(m, 10);
+      
+      const durStr = b.duration;
+      let durMins = 60;
+      if(durStr.includes('30')) durMins = 30;
+      else if(durStr.includes('1.5')) durMins = 90;
+      else if(durStr.includes('2')) durMins = 120;
+      else if(durStr.includes('3')) durMins = 180;
+      else if(durStr.includes('4')) durMins = 240;
+      else if(durStr.includes('All')) durMins = 480;
+      
+      const endMins = startMins + durMins;
+      
+      if(currentMins >= startMins && currentMins < endMins) ongoing = true;
+      if(startMins > currentMins && startMins - currentMins <= 30) nextUp = true;
+    }
+    
+    if(ongoing) return 'bg-secondary text-on-secondary shadow-md scale-[1.02] border-secondary';
+    if(nextUp) return 'bg-tertiary text-on-tertiary shadow-sm border-tertiary';
+    return 'bg-primary text-on-primary hover:scale-[1.02] shadow-sm';
+  };
 
   return (
     <motion.section
@@ -33,7 +77,7 @@ export default function LocatorView({ onBook }: LocatorViewProps) {
           </svg>
 
           {/* Conference Room (Blr lounge) */}
-          <button onClick={() => onBook?.({ id: 'blr', name: 'Blr lounge', capacity: 20 })} className="absolute bg-secondary text-on-secondary shadow-sm hover:scale-[1.02] z-20 cursor-pointer flex flex-col items-center justify-center transition-transform border border-outline-variant/20 focus:outline-none" style={{ left: '0%', top: '0%', width: '14%', height: '24%' }}>
+          <button onClick={() => onBook?.({ id: 'blr', name: 'Blr lounge', capacity: 20 })} className={`absolute z-30 cursor-pointer flex flex-col items-center justify-center transition-transform border border-outline-variant/20 focus:outline-none ${getRoomClass('blr')}`} style={{ left: '0%', top: '0%', width: '14%', height: '24%' }}>
             <span className="text-[10px] font-bold text-center leading-tight">Blr lounge</span>
             <span className="text-[8px] opacity-80">Cap 20</span>
           </button>
@@ -90,7 +134,7 @@ export default function LocatorView({ onBook }: LocatorViewProps) {
             <button
               key={room.id}
               onClick={() => onBook?.({ id: room.id, name: room.name, capacity: room.cap })}
-              className="absolute bg-primary text-on-primary shadow-sm hover:scale-110 z-30 flex flex-col items-center justify-center transition-transform border border-outline-variant/20 focus:outline-none"
+              className={`absolute z-30 flex flex-col items-center justify-center transition-transform border border-outline-variant/20 focus:outline-none ${getRoomClass(room.id)}`}
               style={{ left: room.left, top: room.top, width: '6.2%', height: room.id === 'london' || room.id === 'sfo' ? '6%' : '5%' }}
             >
               <span className="text-[6px] font-bold">{room.name.split(' ')[0]}</span>

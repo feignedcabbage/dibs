@@ -141,7 +141,7 @@ export default function App() {
         
         {/* Mobile View Routing Node */}
         <div className="md:hidden flex-1 flex flex-col">
-           {(currentView === 'home' || currentView === 'lounges') && <MobileHomeView bookings={bookings} onBook={() => setBookingRoom({ id: 'new', name: 'Select a Lounge', capacity: 0 })} onViewAll={() => setCurrentView('mymeetings')} />}
+           {(currentView === 'home' || currentView === 'lounges') && <MobileHomeView userProfile={userProfile} bookings={bookings} onBook={() => setBookingRoom({ id: 'new', name: 'Select a Lounge', capacity: 0 })} onViewAll={() => setCurrentView('mymeetings')} />}
            {currentView === 'profile' && <ProfileView userProfile={userProfile} onUpdateProfile={handleUpdateProfile} onDeleteProfile={handleDeleteProfile} />}
            {currentView === 'mymeetings' && <MyMeetingsView bookings={bookings} onRemove={handleRemoveBooking} onEdit={(b) => setBookingRoom({ isEditing: true, bookingData: b, id: b.roomId, name: b.location, capacity: 0 })} />}
         </div>
@@ -151,7 +151,7 @@ export default function App() {
            {currentView === 'lounges' && <LoungesView bookings={bookings} onBook={(room) => setBookingRoom(room)} />}
            {(currentView === 'home') && <LoungesView bookings={bookings} onBook={(room) => setBookingRoom(room)} />}
            {currentView === 'timeline' && <TimelineView bookings={bookings} selectedDate={globalTimelineDate} setSelectedDate={setGlobalTimelineDate} />}
-           {currentView === 'locator' && <LocatorView onBook={(room) => setBookingRoom(room)} />}
+           {currentView === 'locator' && <LocatorView bookings={bookings} onBook={(room) => setBookingRoom(room)} />}
            {currentView === 'profile' && <ProfileView userProfile={userProfile} onUpdateProfile={handleUpdateProfile} onDeleteProfile={handleDeleteProfile} />}
            {currentView === 'mymeetings' && <MyMeetingsView bookings={bookings} onRemove={handleRemoveBooking} onEdit={(b) => setBookingRoom({ isEditing: true, bookingData: b, id: b.roomId, name: b.location, capacity: 0 })} />}
         </div>
