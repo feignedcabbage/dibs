@@ -30,35 +30,30 @@ export default function MobileHomeView({ userProfile, bookings = [], onBook, onV
         <p className="text-on-surface-variant font-medium text-sm">Welcome to DIBS meeting scheduling.</p>
       </div>
 
-      <button
-        onClick={onBook}
-        className="w-full bg-primary text-on-primary py-6 rounded-3xl shadow-xl shadow-primary/20 flex flex-col items-center justify-center gap-3 mb-12 hover:opacity-95 transition-opacity active:scale-[0.98]"
-      >
-        <div className="w-12 h-12 rounded-full bg-on-primary/20 flex items-center justify-center">
-          <Plus size={28} />
+      {upcoming.length === 0 && (
+        <div className="mb-10">
+          <p className="text-on-surface-variant font-bold text-lg mb-4 text-center">You have no upcoming meetings.</p>
+          <button
+            onClick={onBook}
+            className="w-full bg-primary text-on-primary py-6 rounded-3xl shadow-xl shadow-primary/20 flex flex-col items-center justify-center gap-3 hover:opacity-95 transition-opacity active:scale-[0.98]"
+          >
+            <div className="w-12 h-12 rounded-full bg-on-primary/20 flex items-center justify-center">
+              <Plus size={28} />
+            </div>
+            <span className="font-bold text-lg">Book a Meeting</span>
+          </button>
         </div>
-        <span className="font-bold text-lg">Book a Meeting</span>
-      </button>
+      )}
 
-      <div>
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-extrabold font-headline tracking-tight text-on-surface">Upcoming</h2>
-          {upcoming.length > 0 && (
+      {upcoming.length > 0 && (
+        <div>
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-extrabold font-headline tracking-tight text-on-surface">Upcoming</h2>
             <button onClick={onViewAll} className="text-primary text-xs font-bold uppercase tracking-widest flex items-center gap-1">
               View All <ArrowRight size={14} />
             </button>
-          )}
-        </div>
-
-        {upcoming.length === 0 ? (
-          <div className="bg-surface-container-lowest border border-outline-variant/15 rounded-3xl p-8 flex flex-col items-center justify-center text-center">
-            <div className="w-16 h-16 rounded-full bg-surface-container-highest flex items-center justify-center mb-4">
-              <Calendar size={28} className="text-on-surface-variant/50" />
-            </div>
-            <p className="text-sm font-bold text-on-surface-variant">No upcoming meetings.</p>
-            <p className="text-xs text-on-surface-variant/70 mt-1">Ready for a free schedule!</p>
           </div>
-        ) : (
+
           <div className="space-y-4">
             {upcoming.map(b => (
               <div key={b.id} className="bg-surface-container-lowest border border-outline-variant/15 rounded-[2rem] p-5 shadow-sm">
@@ -76,8 +71,8 @@ export default function MobileHomeView({ userProfile, bookings = [], onBook, onV
               </div>
             ))}
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </motion.section>
   );
 }

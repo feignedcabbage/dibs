@@ -165,12 +165,26 @@ export default function App() {
       </main>
       
       {/* Floating Action Button exclusively for Mobile rendering */}
-      <button 
-        onClick={() => setBookingRoom({ id: 'new', name: 'Select a Lounge', capacity: 0 })}
-        className="md:hidden fixed bottom-20 right-4 w-14 h-14 bg-primary text-on-primary rounded-full shadow-lg shadow-primary/30 flex items-center justify-center z-40 transition-transform active:scale-95"
-      >
-        <span className="text-3xl leading-none font-light mb-1">+</span>
-      </button>
+      {(() => {
+        const hasUpcoming = bookings.some(b => {
+          const d = b.date.replace(/\s+/g, '');
+          return new Date(`${d} ${b.startTime}`) >= new Date();
+        });
+        
+        // Show FAB on mobile if we're not on home or if we have upcoming meetings (to avoid double buttons)
+        const showFab = currentView !== 'home' || hasUpcoming;
+        
+        if (!showFab) return null;
+
+        return (
+          <button 
+            onClick={() => setBookingRoom({ id: 'new', name: 'Select a Lounge', capacity: 0 })}
+            className="md:hidden fixed bottom-24 right-6 w-14 h-14 bg-primary text-on-primary rounded-full shadow-lg shadow-primary/30 flex items-center justify-center z-40 transition-transform active:scale-95"
+          >
+            <span className="text-3xl leading-none font-light mb-1">+</span>
+          </button>
+        );
+      })()}
       
       <MobileNav currentView={currentView} setCurrentView={setCurrentView} />
       <BookingSidebar room={bookingRoom} onClose={() => setBookingRoom(null)} bookings={bookings} addBooking={handleAddBooking} updateBooking={handleUpdateBooking} />
