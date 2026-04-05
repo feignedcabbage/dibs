@@ -1,4 +1,5 @@
 import { motion } from 'motion/react';
+import { AvatarIcon } from '../components/Avatars';
 
 interface Room {
   id: string;
@@ -97,6 +98,8 @@ export default function LoungesView({ onBook, bookings = [] }: LoungesViewProps)
        return {
          status: 'In Use',
          title: ongoingBooking.title,
+         userName: (ongoingBooking as any).userName,
+         userAvatar: (ongoingBooking as any).userAvatar,
          freeAt: formatMinsToTime(ongoingBooking.end),
          progress: Math.min(Math.max(progressRaw, 5), 100) 
        }
@@ -144,9 +147,17 @@ export default function LoungesView({ onBook, bookings = [] }: LoungesViewProps)
               <div className="mt-auto relative z-10 pt-4 w-full">
                 {state.status === 'In Use' ? (
                    <>
-                     <div className="flex justify-between items-center text-[0.65rem] sm:text-xs font-bold text-on-surface-variant mb-2">
-                       <span className="truncate pr-2 italic max-w-[65%]">{state.title}</span>
-                       <span className="bg-secondary/15 text-secondary px-2 py-0.5 rounded-md whitespace-nowrap">Free at {state.freeAt}</span>
+                     <div className="flex justify-between items-center text-[0.65rem] sm:text-xs font-bold text-on-surface-variant mb-2 gap-2">
+                       {state.userAvatar && (
+                         <div className="w-5 h-5 flex-shrink-0 bg-surface-container-lowest rounded-full border border-outline-variant/30 overflow-hidden hidden sm:block p-0.5">
+                           <AvatarIcon type={state.userAvatar} />
+                         </div>
+                       )}
+                       <div className="flex flex-col flex-1 min-w-0">
+                         {state.userName && <span className="truncate italic text-[9px] text-primary/80 leading-none mb-0.5">{state.userName}</span>}
+                         <span className="truncate max-w-full leading-tight">{state.title}</span>
+                       </div>
+                       <span className="bg-secondary/15 text-secondary px-2 py-0.5 rounded-md whitespace-nowrap hidden sm:block">Free at {state.freeAt}</span>
                      </div>
                      <div className="w-full h-1.5 bg-surface-container-high rounded-full overflow-hidden">
                        <div className="h-full primary-gradient rounded-full transition-all duration-1000 ease-in-out" style={{ width: `${state.progress}%` }}></div>

@@ -6,6 +6,33 @@ export const fetchBookings = async () => {
     return response.json();
 };
 
+export const fetchUserProfile = async (email: string) => {
+    const response = await fetch(`${BASE_URL}/users/${encodeURIComponent(email)}`);
+    if (!response.ok) {
+        if (response.status === 404) return { email, name: email.split('@')[0].replace('.', ' '), avatar: 'man' };
+        throw new Error('Failed to fetch user');
+    }
+    return response.json();
+};
+
+export const updateUserProfile = async (profile: any) => {
+    const response = await fetch(`${BASE_URL}/users`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(profile)
+    });
+    if (!response.ok) throw new Error('POST failed');
+    return response.json();
+};
+
+export const deleteUserProfile = async (email: string) => {
+    const response = await fetch(`${BASE_URL}/users/${encodeURIComponent(email)}`, {
+        method: 'DELETE'
+    });
+    if (!response.ok) throw new Error('DELETE user failed');
+    return response.json();
+};
+
 export const createBooking = async (booking: any) => {
     const response = await fetch(`${BASE_URL}/bookings`, {
         method: 'POST',

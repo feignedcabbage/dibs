@@ -1,14 +1,16 @@
-import { Moon, Sun, User } from 'lucide-react';
+import { Moon, Sun, User, Github } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
+import { AvatarIcon } from './Avatars';
 
 interface TopBarProps {
   isDark: boolean;
   toggleDark: () => void;
   setCurrentView?: (view: string) => void;
+  userProfile?: any;
 }
 
-export default function TopBar({ isDark, toggleDark, setCurrentView }: TopBarProps) {
+export default function TopBar({ isDark, toggleDark, setCurrentView, userProfile }: TopBarProps) {
   const [time, setTime] = useState(new Date());
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -38,19 +40,18 @@ export default function TopBar({ isDark, toggleDark, setCurrentView }: TopBarPro
           {time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </div>
         <div className="flex items-center gap-2">
+          <a href="https://github.com/feignedcabbage/dibs" target="_blank" rel="noreferrer" className="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors hidden sm:block">
+            <Github size={20} />
+          </a>
           <button onClick={toggleDark} className="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors">
             {isDark ? <Sun size={20} /> : <Moon size={20} />}
           </button>
           <div className="relative" ref={menuRef}>
             <button 
               onClick={() => setMenuOpen(!menuOpen)} 
-              className="w-10 h-10 rounded-full bg-surface-container-high overflow-hidden ml-2 border-2 border-primary-container hover:opacity-80 transition-opacity"
+              className="w-10 h-10 rounded-full bg-surface-container-highest overflow-hidden ml-2 border-2 border-primary-container hover:opacity-80 transition-opacity flex items-center justify-center p-0.5 relative z-[60]"
             >
-              <img 
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuAIapWppmYmIlfgQsmJ3hIURfAi4dC_txh4deGwl5lhkDNPMEE3JwjB-_cD9d-5khtgnbjAC1fFjPMrHKDdQJzt_3GSrvEVYzNeUHbJuibNkKvTFpIfssSl5EJUXdGD8XpVZUHf_4zky5pUE1cq_bASSQ7Ed9GEtePy-RhlLMmAhAzRowy3YEBtQOJ_6jg20uSUCiMfyGPOvloOOR1LJc0x-3WA7G2uVdZ_82yoDq61YIZ87dVkZ5ipugdSl4Mk307nejIfPPF68CRJ" 
-                alt="User profile" 
-                className="w-full h-full object-cover"
-              />
+              <AvatarIcon type={userProfile?.avatar || 'dog'} />
             </button>
             <AnimatePresence>
               {menuOpen && (

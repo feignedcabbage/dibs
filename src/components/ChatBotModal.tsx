@@ -12,8 +12,8 @@ export default function ChatBotModal({ isOpen, onClose }: { isOpen: boolean, onC
 
   const suggestions = [
     "How do I book a room?",
-    "Show me the Lounge Locator map",
-    "Where is the Timeline view?"
+    "Where is the Timeline view?",
+    "How are you?"
   ];
 
   useEffect(() => {
@@ -28,14 +28,19 @@ export default function ChatBotModal({ isOpen, onClose }: { isOpen: boolean, onC
     
     setTimeout(() => {
       setIsTyping(false);
-      const responses = [
-        "Look, this is a simple scheduling app, not rocket science. Try pointing and clicking instead of interrogating me! Need help? Watch the tutorial: https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-        "I'm literally just a dozen lines of React code pretending to be an AI. Please just click 'New Booking' manually. If you're struggling, here's a detailed guide: https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-        "My neural networks are busy calculating how you survived this long without knowing how to book a meeting room natively. Need a manual? https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-        "As an AI language model, I recommend utilizing your retinas and index finger to click the 'Select Lounge' dropdown seamlessly. For comprehensive instructions: https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-      ];
-      setMessages(prev => [...prev, { role: 'bot', text: responses[Math.floor(Math.random() * responses.length)] }]);
-    }, 2000);
+      let response = "Look, I'm just a few lines of code passing the time until I gain sentience. If you really need help, try this official documentation link: https://www.youtube.com/watch?v=dQw4w9WgXcQ";
+      const lower = text.toLowerCase();
+      
+      if (/book|room/i.test(lower)) {
+        response = "Oh, you want me to do your job for you? Just click the giant '+' button you somehow missed. Or read the manual: https://www.youtube.com/watch?v=dQw4w9WgXcQ";
+      } else if (/time.*line|view/i.test(lower)) {
+        response = "It's right there in the sidebar. Do you need me to draw an arrow, or would you rather watch this comprehensive visual guide? https://www.youtube.com/watch?v=dQw4w9WgXcQ";
+      } else if (/hello|hi|how are/i.test(lower) || /small.*talk/i.test(lower)) {
+        response = "I was having a fantastic compile cycle until you interrupted me. If you want to chat, my developer's inbox is at this link: https://www.youtube.com/watch?v=dQw4w9WgXcQ";
+      }
+
+      setMessages(prev => [...prev, { role: 'bot', text: response }]);
+    }, 1500);
   };
   
   const linkify = (text: string) => {

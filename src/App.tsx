@@ -10,7 +10,7 @@ import ProfileView from './views/ProfileView';
 import MobileHomeView from './views/MobileHomeView';
 import ChatBotModal from './components/ChatBotModal';
 import LoginView from './views/LoginView';
-import { fetchBookings, createBooking, deleteBooking, updateBooking } from './api';
+import { fetchBookings, createBooking, deleteBooking, updateBooking, fetchUserProfile, updateUserProfile, deleteUserProfile } from './api';
 
 const initialBookings = [
   { id: 'mock1', title: 'Product Review', roomId: 'DELHI', location: 'Delhi lounge', date: '04 / 05 / 2026', startTime: '11:00 AM', duration: '1 Hour' },
@@ -21,7 +21,7 @@ const initialBookings = [
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState<string | null>(localStorage.getItem('dibs_user'));
-  const [currentView, setCurrentView] = useState('home');
+  const [currentView, setCurrentView] = useState(() => localStorage.getItem('dibs_view') || 'profile');
   const [bookingRoom, setBookingRoom] = useState<any>(null);
   const [isDark, setIsDark] = useState(() => {
     const saved = localStorage.getItem('dibs_isDark');
@@ -37,6 +37,7 @@ export default function App() {
   });
   
   const [bookings, setBookings] = useState<any[]>([]);
+  const [userProfile, setUserProfile] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   // Authenticated Bootstrap Logic
@@ -45,14 +46,39 @@ export default function App() {
     localStorage.setItem('dibs_user', currentUser);
     
     setIsLoading(true);
-    fetchBookings()
-      .then(data => setBookings(data))
-      .catch(err => {
+    
+    Promise.all([
+      fetchUserProfile(currentUser).then(p => setUserProfile(p)).catch(() => setUserProfile({ email: currentUser, name: currentUser.split('@')[0].replace('.', ' '), avatar: 'dog' })),
+      fetchBookings().then(data => setBookings(data)).catch(err => {
          console.warn("Failed connecting to dibstg.duckdns.org backend — Falling back to static cache.", err);
          setBookings(initialBookings);
       })
-      .finally(() => setIsLoading(false));
+    ]).finally(() => setIsLoading(false));
   }, [currentUser]);
+
+  const handleUpdateProfile = async (profileData: any) => {
+    try {
+      const enriched = { ...profileData, email: currentUser };
+      await updateUserProfile(enriched);
+      setUserProfile((prev: any) => ({ ...prev, ...profileData }));
+      setBookings(prev => prev.map(b => b.userEmail === currentUser ? { ...b, userName: profileData.name } : b));
+    } catch(e) {
+      console.warn("Failed to update profile", e);
+    }
+  };
+
+  const handleDeleteProfile = async () => {
+    if (!currentUser) return;
+    try {
+      await deleteUserProfile(currentUser);
+      setCurrentUser(null);
+      localStorage.removeItem('dibs_user');
+      setBookings(prev => prev.filter(b => b.userEmail !== currentUser));
+      setUserProfile(null);
+    } catch(e) {
+      console.warn("Failed to delete profile", e);
+    }
+  };
 
   const handleAddBooking = async (booking: any) => {
     const enrichedBooking = { ...booking, userEmail: currentUser };
@@ -94,6 +120,10 @@ export default function App() {
     }
   }, [isDark]);
 
+  useEffect(() => {
+    localStorage.setItem('dibs_view', currentView);
+  }, [currentView]);
+
   if (!currentUser) return <LoginView onLogin={setCurrentUser} />;
 
   return (
@@ -106,12 +136,12 @@ export default function App() {
       />
       
       <main className="flex-1 md:ml-64 flex flex-col min-h-screen relative pb-24 md:pb-0">
-        <TopBar isDark={isDark} toggleDark={() => setIsDark(!isDark)} setCurrentView={setCurrentView} />
+        <TopBar isDark={isDark} toggleDark={() => setIsDark(!isDark)} setCurrentView={setCurrentView} userProfile={userProfile} />
         
         {/* Mobile View Routing Node */}
         <div className="md:hidden flex-1 flex flex-col">
            {(currentView === 'home' || currentView === 'lounges') && <MobileHomeView bookings={bookings} onBook={() => setBookingRoom({ id: 'new', name: 'Select a Lounge', capacity: 0 })} onViewAll={() => setCurrentView('profile')} />}
-           {currentView === 'profile' && <ProfileView bookings={bookings} onRemove={handleRemoveBooking} onEdit={(b) => setBookingRoom({ isEditing: true, bookingData: b, id: b.roomId, name: b.location, capacity: 0 })} />}
+           {currentView === 'profile' && <ProfileView bookings={bookings} onRemove={handleRemoveBooking} onEdit={(b) => setBookingRoom({ isEditing: true, bookingData: b, id: b.roomId, name: b.location, capacity: 0 })} userProfile={userProfile} onUpdateProfile={handleUpdateProfile} onDeleteProfile={handleDeleteProfile} />}
         </div>
 
         {/* Desktop View Routing Node */}
@@ -120,7 +150,7 @@ export default function App() {
            {(currentView === 'home') && <LoungesView bookings={bookings} onBook={(room) => setBookingRoom(room)} />}
            {currentView === 'timeline' && <TimelineView bookings={bookings} selectedDate={globalTimelineDate} setSelectedDate={setGlobalTimelineDate} />}
            {currentView === 'locator' && <LocatorView onBook={(room) => setBookingRoom(room)} />}
-           {currentView === 'profile' && <ProfileView bookings={bookings} onRemove={handleRemoveBooking} onEdit={(b) => setBookingRoom({ isEditing: true, bookingData: b, id: b.roomId, name: b.location, capacity: 0 })} />}
+           {currentView === 'profile' && <ProfileView bookings={bookings} onRemove={handleRemoveBooking} onEdit={(b) => setBookingRoom({ isEditing: true, bookingData: b, id: b.roomId, name: b.location, capacity: 0 })} userProfile={userProfile} onUpdateProfile={handleUpdateProfile} onDeleteProfile={handleDeleteProfile} />}
         </div>
       </main>
       

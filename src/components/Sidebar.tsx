@@ -40,17 +40,6 @@ export default function Sidebar({ currentView, setCurrentView, onNewBooking, onO
             </button>
           );
         })}
-        
-        <div className="pt-4 border-t border-surface-container-high mt-4 opacity-50 pointer-events-none">
-          <div className="flex items-center gap-3 text-on-surface-variant px-4 py-3 text-sm font-medium">
-            <BarChart2 size={20} />
-            <span>Analytics</span>
-          </div>
-          <div className="flex items-center gap-3 text-on-surface-variant px-4 py-3 text-sm font-medium">
-            <Archive size={20} />
-            <span>Archive</span>
-          </div>
-        </div>
       </nav>
       
       <div className="mt-auto space-y-1 pt-4">
