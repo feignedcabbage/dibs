@@ -9,7 +9,11 @@ export const fetchBookings = async () => {
 export const fetchUserProfile = async (email: string) => {
     const response = await fetch(`${BASE_URL}/users/${encodeURIComponent(email)}`);
     if (!response.ok) {
-        if (response.status === 404) return { email, name: email.split('@')[0].replace('.', ' '), avatar: 'man' };
+        if (response.status === 404) {
+            const error = new Error('User not found');
+            (error as any).status = 404;
+            throw error;
+        }
         throw new Error('Failed to fetch user');
     }
     return response.json();
