@@ -9,6 +9,8 @@ interface Booking {
   startTime: string;
   duration: string;
   title: string;
+  userName?: string;
+  userEmail?: string;
 }
 
 interface TimelineViewProps {
@@ -110,16 +112,27 @@ export default function TimelineView({ bookings = [], selectedDate, setSelectedD
                           
                           if (widthPercent <= 0 || leftPercent >= 100) return null;
 
+                          const getDisplayName = (b: Booking) => {
+                            if (b.userName) return b.userName;
+                            if (b.userEmail) {
+                              const part = b.userEmail.split('@')[0];
+                              return part.charAt(0).toUpperCase() + part.slice(1);
+                            }
+                            return 'User';
+                          };
+
+                          const displayName = getDisplayName(b);
+
                           return (
                             <div key={b.id} className="absolute top-2 bottom-2 bg-error/10 rounded-xl border-l-4 border-error p-3 flex flex-col justify-center overflow-hidden z-0 pointer-events-none" style={{ left: `${leftPercent}%`, width: `${widthPercent}%` }}>
                               {durMins <= 30 ? (
                                 <span className="text-[10px] font-bold text-on-surface leading-tight">
-                                  Booked by <span className="text-error">{(b as any).userName?.split(' ')[0] || 'User'}</span>
+                                  Booked by <span className="text-error">{displayName.split(' ')[0]}</span>
                                 </span>
                               ) : (
                                 <>
                                   <span className="text-xs font-semibold text-on-surface truncate">{b.title}</span>
-                                  {(b as any).userName && <span className="text-[8px] font-medium text-on-surface-variant truncate opacity-80 mt-0.5">by {(b as any).userName}</span>}
+                                  <span className="text-[8px] font-medium text-on-surface-variant truncate opacity-80 mt-0.5">by {displayName}</span>
                                 </>
                               )}
                             </div>

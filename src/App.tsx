@@ -89,7 +89,11 @@ export default function App() {
   };
 
   const handleAddBooking = async (booking: any) => {
-    const enrichedBooking = { ...booking, userEmail: currentUser };
+    const enrichedBooking = { 
+      ...booking, 
+      userEmail: currentUser,
+      userName: userProfile?.name || currentUser?.split('@')[0]
+    };
     try {
       await createBooking(enrichedBooking);
       setBookings((prev) => [...prev, enrichedBooking]);
