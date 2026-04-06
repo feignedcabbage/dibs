@@ -46,37 +46,58 @@ export default function BookingSidebar({ room, onClose, bookings = [], addBookin
   const [error, setError] = useState('');
   const [autoUpdatedNote, setAutoUpdatedNote] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const lastInitRoomRef = useState<any>(null)[0]; // We can use a ref but state is easier to manage across effects here or just a simple useRef
+  const [sessionRoom, setSessionRoom] = useState<any>(null);
 
   useEffect(() => {
-    if (room?.isEditing && room.bookingData) {
-      setTitle(room.bookingData.title);
-      setDate(room.bookingData.date);
-      setStartTime(room.bookingData.startTime);
-      setDuration(room.bookingData.duration);
-      setAutoUpdatedNote(false);
-      const found = loungeOptions.find(o => o.toLowerCase().includes(room.bookingData.roomId.toLowerCase()));
-      if (found) setSelectedLounge(found);
-    } else {
-      setTitle('');
-      setDuration('1 Hour');
-      setError('');
-      setAutoUpdatedNote(false);
+    if (!room) {
+      setSessionRoom(null);
       setIsSuccess(false);
-      
-      let initialLounge = loungeOptions[0];
-      if (room && room.id !== 'new') {
-        const found = loungeOptions.find(o => o.toLowerCase().includes(room.name.toLowerCase()));
-        if (found) initialLounge = found;
+      return;
+    }
+
+    const isNewRoom = room !== sessionRoom;
+    if (isNewRoom) setSessionRoom(room);
+
+    let currentLoungePref = selectedLounge;
+
+    if (room.isEditing && room.bookingData) {
+      if (isNewRoom) {
+        setTitle(room.bookingData.title);
+        setDate(room.bookingData.date);
+        setStartTime(room.bookingData.startTime);
+        setDuration(room.bookingData.duration);
+        setAutoUpdatedNote(false);
+        const found = loungeOptions.find(o => o.toLowerCase().includes(room.bookingData.roomId.toLowerCase()));
+        if (found) {
+          setSelectedLounge(found);
+          currentLoungePref = found;
+        }
       }
-      setSelectedLounge(initialLounge);
+    } else {
+      if (isNewRoom) {
+        setTitle('');
+        setDuration('1 Hour');
+        setError('');
+        setIsSuccess(false);
+        
+        let initialLounge = loungeOptions[0];
+        if (room && room.id !== 'new') {
+          const found = loungeOptions.find(o => o.toLowerCase().includes(room.name.toLowerCase()));
+          if (found) initialLounge = found;
+        }
+        setSelectedLounge(initialLounge);
+        currentLoungePref = initialLounge;
+        setAutoUpdatedNote(false);
+      }
       
       // Auto-jump logic to find next available date
       const today = new Date();
-      const formatAsDateStr = (d: Date) => {
-         const mm = (d.getMonth() + 1).toString().padStart(2, '0');
-         const dd = d.getDate().toString().padStart(2, '0');
-         const yyyy = d.getFullYear();
-         return `${mm} / ${dd} / ${yyyy}`;
+      const formatAsDateStr = (dateObj: Date) => {
+         const mmStr = (dateObj.getMonth() + 1).toString().padStart(2, '0');
+         const ddStr = dateObj.getDate().toString().padStart(2, '0');
+         const yyyyStr = dateObj.getFullYear();
+         return `${mmStr} / ${ddStr} / ${yyyyStr}`;
       };
 
       const checkAvailability = (testDate: string, loungePref: string) => {
@@ -103,19 +124,19 @@ export default function BookingSidebar({ room, onClose, bookings = [], addBookin
         });
       };
 
-      let d = new Date(today);
-      let foundDateStr = formatAsDateStr(d);
+      let dObj = new Date(today);
+      let foundDateStr = formatAsDateStr(dObj);
       let foundTimeStr = '';
       
       for (let i = 0; i < 30; i++) {
-        const checkStr = formatAsDateStr(d);
-        const availTimes = checkAvailability(checkStr, initialLounge);
+        const checkStr = formatAsDateStr(dObj);
+        const availTimes = checkAvailability(checkStr, currentLoungePref);
         if (availTimes.length > 0) {
            foundDateStr = checkStr;
            foundTimeStr = availTimes[0];
            break;
         }
-        d.setDate(d.getDate() + 1);
+        dObj.setDate(dObj.getDate() + 1);
       }
       
       setDate(foundDateStr);
@@ -124,7 +145,7 @@ export default function BookingSidebar({ room, onClose, bookings = [], addBookin
         setAutoUpdatedNote(true);
       }
     }
-  }, [room]);
+  }, [room, bookings]);
 
   const handleConfirm = () => {
     setError('');

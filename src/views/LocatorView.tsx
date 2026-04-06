@@ -64,9 +64,31 @@ export default function LocatorView({ bookings = [], onBook }: LocatorViewProps)
       animate={{ opacity: 1, y: 0 }}
       className="px-8 py-6 flex-1 flex flex-col h-full"
     >
-      <div className="mb-8">
-        <h2 className="text-3xl font-extrabold font-headline text-on-surface tracking-tighter">Wayfinding</h2>
-        <p className="text-on-surface-variant font-medium">Architectural Floor Plan & Room Locator</p>
+      <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div>
+          <h2 className="text-4xl font-extrabold font-headline text-on-surface tracking-tighter">Wayfinding</h2>
+          <p className="text-on-surface-variant font-medium leading-tight opacity-70">Architectural Floor Plan & Room Locator</p>
+        </div>
+        
+        {/* Universal Map Legend */}
+        <div className="flex items-center gap-6 bg-surface-container-low/40 backdrop-blur-md px-6 py-3 rounded-2xl border border-outline-variant/10 shadow-sm">
+          <div className="flex items-center gap-2">
+            <div className="w-2.5 h-2.5 rounded-full bg-primary shadow-[0_0_8px_rgba(var(--color-primary-rgb),0.4)]"></div>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Available</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-2.5 h-2.5 rounded-full bg-secondary shadow-[0_0_8px_rgba(var(--color-secondary-rgb),0.5)]"></div>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">In Use</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-2.5 h-2.5 rounded-full bg-tertiary shadow-[0_0_8px_rgba(var(--color-tertiary-rgb),0.5)]"></div>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Next Up</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-2.5 h-2.5 rounded-full bg-surface-container-highest border border-outline-variant/30"></div>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant/40">Locked</span>
+          </div>
+        </div>
       </div>
 
       <div className="flex flex-col items-center justify-center flex-1 w-full bg-surface-container-lowest/50 rounded-3xl border border-outline-variant/10 overflow-hidden relative shadow-inner">
@@ -155,26 +177,7 @@ export default function LocatorView({ bookings = [], onBook }: LocatorViewProps)
 
         </div>
 
-        <div className="absolute bottom-6 left-6 bg-surface-container/60 backdrop-blur-xl p-4 rounded-2xl border border-outline-variant/20 shadow-2xl z-50">
-          <div className="flex flex-wrap md:flex-nowrap gap-4 md:gap-6">
-            <div className="flex items-center gap-2.5">
-              <div className="w-3.5 h-3.5 rounded-full bg-primary shadow-[0_0_10px_rgba(var(--color-primary-rgb),0.5)]"></div>
-              <span className="text-[10px] font-black uppercase tracking-widest text-on-surface/80">Available</span>
-            </div>
-            <div className="flex items-center gap-2.5">
-              <div className="w-3.5 h-3.5 rounded-full bg-secondary shadow-[0_0_10px_rgba(var(--color-secondary-rgb),0.5)]"></div>
-              <span className="text-[10px] font-black uppercase tracking-widest text-on-surface/80">In Use</span>
-            </div>
-            <div className="flex items-center gap-2.5">
-              <div className="w-3.5 h-3.5 rounded-full bg-tertiary shadow-[0_0_10px_rgba(var(--color-tertiary-rgb),0.5)]"></div>
-              <span className="text-[10px] font-black uppercase tracking-widest text-on-surface/80">Next Up</span>
-            </div>
-            <div className="flex items-center gap-2.5">
-              <div className="w-3.5 h-3.5 rounded-full bg-surface-container-highest/50 border border-outline-variant/30"></div>
-              <span className="text-[10px] font-black uppercase tracking-widest text-on-surface/40">Restricted</span>
-            </div>
-          </div>
-        </div>
+
       </div>
     </motion.section>
   );
