@@ -134,6 +134,8 @@ export default function App() {
 
   if (!currentUser) return <LoginView onLogin={setCurrentUser} />;
 
+  const myBookings = bookings.filter(b => b.userEmail === currentUser);
+
   return (
     <div className="bg-surface font-body text-on-surface flex min-h-screen transition-colors duration-300">
       <Sidebar 
@@ -148,9 +150,9 @@ export default function App() {
         
         {/* Mobile View Routing Node */}
         <div className="md:hidden flex-1 flex flex-col">
-           {(currentView === 'home' || currentView === 'lounges') && <MobileHomeView userProfile={userProfile} bookings={bookings} onBook={() => setBookingRoom({ id: 'new', name: 'Select a Lounge', capacity: 0 })} onViewAll={() => setCurrentView('mymeetings')} />}
+           {(currentView === 'home' || currentView === 'lounges') && <MobileHomeView userProfile={userProfile} bookings={myBookings} onBook={() => setBookingRoom({ id: 'new', name: 'Select a Lounge', capacity: 0 })} onViewAll={() => setCurrentView('mymeetings')} />}
            {currentView === 'profile' && <ProfileView userProfile={userProfile} onUpdateProfile={handleUpdateProfile} onDeleteProfile={handleDeleteProfile} onLogout={handleLogout} />}
-           {currentView === 'mymeetings' && <MyMeetingsView bookings={bookings} onRemove={handleRemoveBooking} onEdit={(b) => setBookingRoom({ isEditing: true, bookingData: b, id: b.roomId, name: b.location, capacity: 0 })} />}
+           {currentView === 'mymeetings' && <MyMeetingsView bookings={myBookings} onRemove={handleRemoveBooking} onEdit={(b) => setBookingRoom({ isEditing: true, bookingData: b, id: b.roomId, name: b.location, capacity: 0 })} />}
         </div>
 
         {/* Desktop View Routing Node */}
@@ -160,7 +162,7 @@ export default function App() {
            {currentView === 'timeline' && <TimelineView bookings={bookings} selectedDate={globalTimelineDate} setSelectedDate={setGlobalTimelineDate} />}
            {currentView === 'locator' && <LocatorView bookings={bookings} onBook={(room) => setBookingRoom(room)} />}
            {currentView === 'profile' && <ProfileView userProfile={userProfile} onUpdateProfile={handleUpdateProfile} onDeleteProfile={handleDeleteProfile} onLogout={handleLogout} />}
-           {currentView === 'mymeetings' && <MyMeetingsView bookings={bookings} onRemove={handleRemoveBooking} onEdit={(b) => setBookingRoom({ isEditing: true, bookingData: b, id: b.roomId, name: b.location, capacity: 0 })} />}
+           {currentView === 'mymeetings' && <MyMeetingsView bookings={myBookings} onRemove={handleRemoveBooking} onEdit={(b) => setBookingRoom({ isEditing: true, bookingData: b, id: b.roomId, name: b.location, capacity: 0 })} />}
         </div>
       </main>
       
