@@ -49,7 +49,22 @@ export default function App() {
     setIsLoading(true);
     
     Promise.all([
-      fetchUserProfile(currentUser).then(p => setUserProfile(p)).catch(() => setUserProfile({ email: currentUser, name: currentUser.split('@')[0].replace('.', ' '), avatar: 'dog' })),
+      fetchUserProfile(currentUser)
+        .then(p => setUserProfile(p))
+        .catch(async (err) => {
+          // If 404/not found, auto-register the user to track "registrations" even without bookings
+          const defaultProfile = { 
+            email: currentUser, 
+            name: currentUser.split('@')[0].replace('.', ' '), 
+            avatar: 'dog' 
+          };
+          setUserProfile(defaultProfile);
+          try {
+            await updateUserProfile(defaultProfile);
+          } catch(e) {
+            console.warn("Auto-registration failed", e);
+          }
+        }),
       fetchBookings().then(data => setBookings(data)).catch(err => {
          console.warn("Failed connecting to dibstg.duckdns.org backend — Falling back to static cache.", err);
          setBookings(initialBookings);
