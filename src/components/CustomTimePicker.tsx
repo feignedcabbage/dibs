@@ -27,6 +27,10 @@ export default function CustomTimePicker({ defaultValue, align = 'left', onChang
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    setSelectedTime(defaultValue);
+  }, [defaultValue]);
+
   const [mm, dd, yyyy] = date.split('/').map(s => parseInt(s.trim(), 10));
   const now = new Date();
 

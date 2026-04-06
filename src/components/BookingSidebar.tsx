@@ -91,13 +91,13 @@ export default function BookingSidebar({ room, onClose, bookings = [], addBookin
         setAutoUpdatedNote(false);
       }
       
-      // Auto-jump logic to find next available date
-      const today = new Date();
-      const formatAsDateStr = (dateObj: Date) => {
-         const mmStr = (dateObj.getMonth() + 1).toString().padStart(2, '0');
-         const ddStr = dateObj.getDate().toString().padStart(2, '0');
-         const yyyyStr = dateObj.getFullYear();
-         return `${mmStr} / ${ddStr} / ${yyyyStr}`;
+      // Auto-jump logic to find next available date/time
+      const now = new Date();
+      const formatAsDateStr = (d: Date) => {
+         const mm = (d.getMonth() + 1).toString().padStart(2, '0');
+         const dd = d.getDate().toString().padStart(2, '0');
+         const yyyy = d.getFullYear();
+         return `${mm} / ${dd} / ${yyyy}`;
       };
 
       const checkAvailability = (testDate: string, loungePref: string) => {
@@ -110,13 +110,16 @@ export default function BookingSidebar({ room, onClose, bookings = [], addBookin
         return allTimes.filter(time => {
           const startMins = parseTimeToMinutes(time);
           const slotDate = new Date(yyyy, mm - 1, dd, Math.floor(startMins / 60), startMins % 60);
-          if (slotDate < new Date()) return false;
+          
+          // Must be in the future (plus a 5-min buffer)
+          if (slotDate.getTime() < (now.getTime() - 5 * 60000)) return false;
           
           const hasCollision = bookings.some((b: any) => {
             if (b.date === testDate && b.roomId.toLowerCase() === loungePref.split(' ')[0].toLowerCase()) {
                const bStart = parseTimeToMinutes(b.startTime);
                const bEnd = bStart + getDurationMinutes(b.duration);
-               return startMins < bEnd && (startMins + 60) > bStart; // Check against 1 hr block
+               // Overlap check
+               return startMins < bEnd && (startMins + 60) > bStart; 
             }
             return false;
           });
@@ -124,24 +127,27 @@ export default function BookingSidebar({ room, onClose, bookings = [], addBookin
         });
       };
 
-      let dObj = new Date(today);
-      let foundDateStr = formatAsDateStr(dObj);
+      let currentD = new Date(now);
+      let foundDateStr = formatAsDateStr(currentD);
       let foundTimeStr = '';
       
+      // Try next 30 days
       for (let i = 0; i < 30; i++) {
-        const checkStr = formatAsDateStr(dObj);
+        const checkStr = formatAsDateStr(currentD);
         const availTimes = checkAvailability(checkStr, currentLoungePref);
         if (availTimes.length > 0) {
            foundDateStr = checkStr;
            foundTimeStr = availTimes[0];
            break;
         }
-        dObj.setDate(dObj.getDate() + 1);
+        currentD.setDate(currentD.getDate() + 1);
+        currentD.setHours(0, 0, 0, 0); // Reset time for next day check
       }
       
       setDate(foundDateStr);
+      // If we are late in the day and found no today slots, it will pick tomorrow 10 AM.
       setStartTime(foundTimeStr || '10:00 AM');
-      if (foundDateStr !== formatAsDateStr(today)) {
+      if (foundDateStr !== formatAsDateStr(now)) {
         setAutoUpdatedNote(true);
       }
     }

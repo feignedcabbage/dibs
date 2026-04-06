@@ -15,6 +15,10 @@ export default function CustomDatePicker({ defaultValue = '04 / 05 / 2026', onCh
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    setSelectedDate(defaultValue);
+  }, [defaultValue]);
+
   return (
     <div className="relative" ref={popoverRef}>
       <div 
